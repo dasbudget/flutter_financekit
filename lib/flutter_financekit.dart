@@ -51,7 +51,7 @@ class FinanceKit {
   /// It’s safe to call this method multiple times; the framework prompts a
   /// person only if necessary.
   static Future<AuthorizationStatus> requestAuthorization() {
-    return FlutterFinanceKitPlatform.instance.requestAuthorization();
+    return _api.requestAuthorization().then((status) => AuthorizationStatus.values.byName(status));
   }
 
   ///

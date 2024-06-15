@@ -56,10 +56,12 @@ enum class DataType(val raw: Int) {
     }
   }
 }
+
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface FinanceKitApi {
   fun isDataAvailable(type: DataType): Boolean
-  fun authorizationStatus(): String
+  fun authorizationStatus(callback: (Result<String>) -> Unit)
+  fun requestAuthorization(callback: (Result<String>) -> Unit)
 
   companion object {
     /** The codec used by FinanceKitApi. */
@@ -91,13 +93,33 @@ interface FinanceKitApi {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.FinanceKitApi.authorizationStatus", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
-            var wrapped: List<Any?>
-            try {
-              wrapped = listOf<Any?>(api.authorizationStatus())
-            } catch (exception: Throwable) {
-              wrapped = wrapError(exception)
+            api.authorizationStatus() { result: Result<String> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
             }
-            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.FinanceKitApi.requestAuthorization", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.requestAuthorization() { result: Result<String> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
           }
         } else {
           channel.setMessageHandler(null)

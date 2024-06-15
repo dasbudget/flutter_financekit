@@ -401,9 +401,11 @@ enum DataType {
 abstract class FinanceKitApi {
   bool isDataAvailable(DataType type);
 
+  @async
   String authorizationStatus();
-  //
-  // AuthorizationStatus requestAuthorization();
+
+  @async
+  String requestAuthorization();
   //
   // List<Account> accounts(QueryParams<Account> query);
   //

@@ -41,10 +41,12 @@ enum DataType: Int {
   /// The value that describes orders records, such as purchases.
   case orders = 1
 }
+
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol FinanceKitApi {
   func isDataAvailable(type: DataType) throws -> Bool
-  func authorizationStatus() throws -> String
+  func authorizationStatus(completion: @escaping (Result<String, Error>) -> Void)
+  func requestAuthorization(completion: @escaping (Result<String, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -70,15 +72,32 @@ class FinanceKitApiSetup {
     let authorizationStatusChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.FinanceKitApi.authorizationStatus", binaryMessenger: binaryMessenger)
     if let api = api {
       authorizationStatusChannel.setMessageHandler { _, reply in
-        do {
-          let result = try api.authorizationStatus()
-          reply(wrapResult(result))
-        } catch {
-          reply(wrapError(error))
+        api.authorizationStatus() { result in
+          switch result {
+            case .success(let res):
+              reply(wrapResult(res))
+            case .failure(let error):
+              reply(wrapError(error))
+          }
         }
       }
     } else {
       authorizationStatusChannel.setMessageHandler(nil)
+    }
+    let requestAuthorizationChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.FinanceKitApi.requestAuthorization", binaryMessenger: binaryMessenger)
+    if let api = api {
+      requestAuthorizationChannel.setMessageHandler { _, reply in
+        api.requestAuthorization() { result in
+          switch result {
+            case .success(let res):
+              reply(wrapResult(res))
+            case .failure(let error):
+              reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      requestAuthorizationChannel.setMessageHandler(nil)
     }
   }
 }

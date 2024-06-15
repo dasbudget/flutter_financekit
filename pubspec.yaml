@@ -31,7 +31,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.example.flutter_financekit
+        package: com.dasbudget.flutter_financekit
         pluginClass: FlutterFinanceKitPlugin
       ios:
         pluginClass: FlutterFinanceKitPlugin

@@ -17,7 +17,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  AuthorizationStatus _authStatus = AuthorizationStatus.notDetermined;
+  String _authStatus = AuthorizationStatus.denied.name;
 
   @override
   void initState() {
@@ -29,7 +29,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> initPlatformState() async {
     FinanceKit.authorizationStatus().then((status) => {
           setState(() {
-            _authStatus = status;
+            _authStatus = "init ${status.name}";
           })
         });
   }
@@ -42,7 +42,21 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Plugin example app'),
         ),
         body: Center(
-          child: Text('Running on: $_authStatus'),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('FinanceKit Auth Status\n$_authStatus', textAlign: TextAlign.center),
+              ElevatedButton(
+                  child: const Text("Request"),
+                  onPressed: () {
+                    FinanceKit.requestAuthorization().then((status) => {
+                          setState(() {
+                            _authStatus = "req ${status.name}";
+                          })
+                        });
+                  })
+            ],
+          ),
         ),
       ),
     );
