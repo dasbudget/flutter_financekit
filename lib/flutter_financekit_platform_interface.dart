@@ -1,6 +1,6 @@
 import 'package:flutter_financekit/flutter_financekit_types.dart';
+import 'package:flutter_financekit/messages.g.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
-import 'package:flutter_financekit/pigeon.dart';
 import 'package:uuid/uuid.dart';
 
 import 'flutter_financekit_method_channel.dart';

@@ -1,5 +1,16 @@
 import 'package:pigeon/pigeon.dart';
 
+@ConfigurePigeon(PigeonOptions(
+  dartOut: 'lib/messages.g.dart',
+  dartOptions: DartOptions(),
+  kotlinOut:
+      'android/src/main/kotlin/com/dasbudget/flutter_financekit/Messages.g.kt',
+  kotlinOptions: KotlinOptions(package: "com.dasbudget.flutter_financeKit"),
+  swiftOut: 'ios/Classes/Messages.g.swift',
+  swiftOptions: SwiftOptions(),
+  dartPackageName: 'flutter_financekit',
+))
+
 /// Values that describe the kinds of data in the finance store.
 enum DataType {
   /// The value that describes financial data, such as account information.
@@ -7,6 +18,17 @@ enum DataType {
 
   /// The value that describes orders records, such as purchases.
   orders,
+}
+
+enum AuthorizationStatus {
+  /// A person authorized the app to use FinanceKit services.
+  authorized,
+
+  /// A person denied the use of FinanceKit services for the app
+  denied,
+
+  /// A person has not chosen whether the app can use FinanceKit services.
+  notDetermined,
 }
 
 // NumberFormat numberFormat = NumberFormat();
@@ -402,33 +424,31 @@ abstract class FinanceKitApi {
   bool isDataAvailable(DataType type);
 
   @async
-  String authorizationStatus();
+  AuthorizationStatus authorizationStatus();
 
   @async
-  String requestAuthorization();
-  //
-  // List<Account> accounts(QueryParams<Account> query);
-  //
-  // History<Account> accountHistory({
-  //   HistoryToken? since,
-  //   bool isMonitoring = true,
-  // });
-  //
-  // List<AccountBalance> accountBalances(QueryParams<AccountBalance> query);
-  //
-  // History<AccountBalance> accountBalanceHistory(
-  //   Uuid accountID, {
-  //   HistoryToken? since,
-  //   bool isMonitoring = true,
-  // });
-  //
-  // History<Transaction> transactionHistory(
-  //   Uuid accountID, {
-  //   HistoryToken? since,
-  //   bool isMonitoring = true,
-  // });
-  //
-  // List<Transaction> transactions(QueryParams<Transaction> query);
+  AuthorizationStatus requestAuthorization();
+//
+// List<Account> accounts(QueryParams<Account> query);
+//
+// History<Account> accountHistory({
+//   HistoryToken? since,
+//   bool isMonitoring = true,
+// });
+//
+// List<AccountBalance> accountBalances(QueryParams<AccountBalance> query);
+//
+// History<AccountBalance> accountBalanceHistory(
+//   Uuid accountID, {
+//   HistoryToken? since,
+//   bool isMonitoring = true,
+// });
+//
+// History<Transaction> transactionHistory(
+//   Uuid accountID, {
+//   HistoryToken? since,
+//   bool isMonitoring = true,
+// });
+//
+// List<Transaction> transactions(QueryParams<Transaction> query);
 }
-
-

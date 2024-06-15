@@ -1,8 +1,7 @@
 import 'package:flutter_financekit/flutter_financekit_types.dart';
-import 'package:flutter_financekit/pigeon.dart';
+import 'package:flutter_financekit/messages.g.dart';
 import 'package:uuid/uuid.dart';
 import 'flutter_financekit_platform_interface.dart';
-import 'pigeon.dart';
 
 /// Access financial data and interact with Apple Card, Apple Cash, and orders in Wallet.
 /// Use FinanceKit to access on-device financial data, Apple Cash, and interact with orders in Apple Wallet.
@@ -24,7 +23,6 @@ import 'pigeon.dart';
 /// the FinanceKit managed entitlement request form. For more information
 /// about managed entitlements, see Provisioning with capabilities.
 class FinanceKit {
-  static final FinanceKitApi _api = FinanceKitApi();
 
   ///
   /// Authorization
@@ -33,13 +31,13 @@ class FinanceKit {
   /// Returns a Boolean value that indicates if data that represents the
   /// provided type is available in the finance store.
   static Future<bool> isDataAvailable(DataType type) {
-    return _api.isDataAvailable(type);
+    return FlutterFinanceKitPlatform.instance.isDataAvailable(type);
   }
 
 
   /// Checks the authorization status for the calling application.
   static Future<AuthorizationStatus> authorizationStatus() {
-    return _api.authorizationStatus().then((status) => AuthorizationStatus.values.byName(status));
+    return FlutterFinanceKitPlatform.instance.authorizationStatus();
   }
 
   /// Prompts a person to give FinanceKit authorization to access financial data.
@@ -51,7 +49,7 @@ class FinanceKit {
   /// It’s safe to call this method multiple times; the framework prompts a
   /// person only if necessary.
   static Future<AuthorizationStatus> requestAuthorization() {
-    return _api.requestAuthorization().then((status) => AuthorizationStatus.values.byName(status));
+    return FlutterFinanceKitPlatform.instance.requestAuthorization();
   }
 
   ///

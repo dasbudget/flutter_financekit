@@ -2,17 +2,18 @@ import Flutter
 import UIKit
 import FinanceKit
 
+
 @available(iOS 17.4, *)
-extension AuthorizationStatus {
-    var authorizationStatus: String {
+extension FinanceKit.AuthorizationStatus {
+    var toApi: AuthorizationStatus {
         get throws {
             switch self {
             case .authorized:
-                return "authorized"
+                return .authorized
             case .denied:
-                return "denied"
+                return .denied
             case .notDetermined:
-                return "notDetermined"
+                return .notDetermined
             @unknown default:
                 fatalError()
             }
@@ -35,7 +36,6 @@ extension FinanceStore.DataType {
 
 
 public class SwiftFlutterFinanceKitPlugin: NSObject, FlutterPlugin, FinanceKitApi {
-    
     private let store = FinanceStore.shared
 
     public static func register(with registrar: FlutterPluginRegistrar) {
@@ -48,23 +48,22 @@ public class SwiftFlutterFinanceKitPlugin: NSObject, FlutterPlugin, FinanceKitAp
         return FinanceStore.isDataAvailable(FinanceStore.DataType.fromApi(type: type))
     }
 
-    func authorizationStatus(completion: @escaping (Result<String, any Error>) -> Void) {
+    func authorizationStatus(completion: @escaping (Result<AuthorizationStatus, any Error>) -> Void) {
         Task {
             do {
                 let status = try await store.authorizationStatus()
-                completion(.success(try status.authorizationStatus))
+                completion(.success(try status.toApi))
             } catch let error {
                 fatalError()
             }
         }
     }
-    
-    
-    func requestAuthorization(completion: @escaping (Result<String, any Error>) -> Void) {
+
+    func requestAuthorization(completion: @escaping (Result<AuthorizationStatus, any Error>) -> Void) {
         Task {
             do {
                 let status = try await store.requestAuthorization()
-                completion(.success(try status.authorizationStatus))
+                completion(.success(try status.toApi))
             } catch let error {
                 fatalError()
             }

@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:/Users/anthony/dev/flutter_financekit/example/ios/.symlinks/plugins/flutter_financekit/ios/Classes/Messages.g.swift">
+   </FileRef>
+   <FileRef
       location = "group:Runner.xcodeproj">
    </FileRef>
    <FileRef

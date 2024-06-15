@@ -4,8 +4,8 @@ version: 0.0.1
 homepage: https://github.com/dasbudget/flutter_financekit
 
 environment:
-  sdk: '>=2.18.6 <3.0.0'
-  flutter: ">=2.5.0"
+  sdk: '>=2.19.0 <4.0.0'
+  flutter: ">=3.7.0"
 
 dependencies:
   decimal: ^2.3.3
@@ -14,6 +14,7 @@ dependencies:
   flutter_web_plugins:
     sdk: flutter
   intl: ^0.18.1
+  pigeon: ^14.0.0
   plugin_platform_interface: ^2.0.2
   uuid: ^4.1.0
 
@@ -21,7 +22,6 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
-  pigeon: ^10.0.0
 
 
 # For information on the generic Dart part of this file, see the

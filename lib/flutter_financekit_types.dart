@@ -30,17 +30,6 @@ class History<T> {}
 class HistoryToken {}
 
 
-enum AuthorizationStatus {
-  /// A person authorized the app to use FinanceKit services.
-  authorized,
-
-  /// A person denied the use of FinanceKit services for the app
-  denied,
-
-  /// A person has not chosen whether the app can use FinanceKit services.
-  notDetermined,
-}
-
 /// Values that describe kinds of transactions.
 enum TransactionType {
   /// A credit or debit adjustment transaction.

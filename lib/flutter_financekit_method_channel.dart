@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_financekit/flutter_financekit_types.dart';
-import 'package:flutter_financekit/pigeon.dart';
+import 'package:flutter_financekit/messages.g.dart';
 import 'package:uuid/uuid.dart';
 
 import 'flutter_financekit_platform_interface.dart';
@@ -9,27 +9,21 @@ import 'flutter_financekit_platform_interface.dart';
 /// An implementation of [FlutterFinanceKitPlatform] that uses method channels.
 class MethodChannelFlutterFinanceKit implements FlutterFinanceKitPlatform {
   /// The method channel used to interact with the native platform.
-  @visibleForTesting
-  final methodChannel = const MethodChannel('com.dasbudget/flutter_financekit');
+  static final FinanceKitApi _api = FinanceKitApi();
 
   @override
   Future<bool> isDataAvailable(DataType type) async {
-    // TODO: implement isDataAvailable
-    throw UnimplementedError();
+    throw _api.isDataAvailable(type);
   }
 
   @override
   Future<AuthorizationStatus> authorizationStatus() async {
-    final status =
-        await methodChannel.invokeMethod<String>('authorizationStatus');
-    return AuthorizationStatus.values.byName(status!);
+    throw _api.authorizationStatus();
   }
 
   @override
   Future<AuthorizationStatus> requestAuthorization() async {
-    final status =
-        await methodChannel.invokeMethod<String>('requestAuthorization');
-    return AuthorizationStatus.values.byName(status!);
+    throw _api.requestAuthorization();
   }
 
   @override
