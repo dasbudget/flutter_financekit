@@ -5,7 +5,7 @@ import FinanceKit
 
 @available(iOS 17.4, *)
 extension FinanceKit.AuthorizationStatus {
-    var toApi: AuthorizationStatus {
+    var toApi: ApiAuthorizationStatus {
         get throws {
             switch self {
             case .authorized:
@@ -23,8 +23,48 @@ extension FinanceKit.AuthorizationStatus {
 }
 
 @available(iOS 17.4, *)
+extension FinanceKit.Account {
+    var toApi: ApiAccount {
+        get {
+            return ApiAccount(type: liabilityAccount != nil ? .liability : .asset, currencyCode:
+            currencyCode, displayName: displayName, id: id.uuidString, institutionName: institutionName)
+        }
+    }
+}
+
+
+@available(iOS 17.4, *)
+extension FinanceKit.AccountBalance {
+    var toApi: AccountBalance {
+        get {
+            return AccountBalance(accountID: id.uuidString, currencyCode: currencyCode, currentBalance: currentBalance, id: id.uuidString)
+        }
+    }
+}
+
+
+@available(iOS 17.4, *)
+extension FinanceKit.CurrentBalance {
+    var toApi: CurrentBalance {
+        get throws {
+            switch self {
+            case .available:
+                return .available
+            case .availableAndBooked:
+                return .availableAndBooked
+            case .booked:
+                return .booked
+            @unknown default:
+                fatalError()
+            }
+
+        }
+    }
+}
+
+@available(iOS 17.4, *)
 extension FinanceStore.DataType {
-    static func fromApi(type: DataType) -> FinanceStore.DataType {
+    static func fromApi(type: ApiDataType) -> FinanceStore.DataType {
         switch type {
         case .financialData:
             return FinanceStore.DataType.financialData
@@ -44,11 +84,11 @@ public class SwiftFlutterFinanceKitPlugin: NSObject, FlutterPlugin, FinanceKitAp
         FinanceKitApiSetup.setUp(binaryMessenger: messenger, api: api);
     }
 
-    func isDataAvailable(type: DataType) throws -> Bool {
+    func isDataAvailable(type: ApiDataType) throws -> Bool {
         return FinanceStore.isDataAvailable(FinanceStore.DataType.fromApi(type: type))
     }
 
-    func authorizationStatus(completion: @escaping (Result<AuthorizationStatus, any Error>) -> Void) {
+    func authorizationStatus(completion: @escaping (Result<ApiAuthorizationStatus, any Error>) -> Void) {
         Task {
             do {
                 let status = try await store.authorizationStatus()
@@ -59,7 +99,7 @@ public class SwiftFlutterFinanceKitPlugin: NSObject, FlutterPlugin, FinanceKitAp
         }
     }
 
-    func requestAuthorization(completion: @escaping (Result<AuthorizationStatus, any Error>) -> Void) {
+    func requestAuthorization(completion: @escaping (Result<ApiAuthorizationStatus, any Error>) -> Void) {
         Task {
             do {
                 let status = try await store.requestAuthorization()
@@ -69,6 +109,38 @@ public class SwiftFlutterFinanceKitPlugin: NSObject, FlutterPlugin, FinanceKitAp
             }
         }
     }
+
+
+    func accounts(query: ApiQueryParams, completion: @escaping (Result<[ApiAccount], any Error>) -> Void) {
+        Task {
+            do {
+                let accounts = try await self.store.accounts(query: AccountQuery())
+                completion(.success(accounts.map({ a in
+                    a.toApi
+                })))
+            } catch let error {
+                fatalError()
+            }
+        }
+    }
+
+    func accountBalances(query: ApiQueryParams, completion: @escaping (Result<[AccountBalance], any Error>) -> Void) {
+        Task {
+            do {
+                let accounts = try await self.store.accountBalances(query: AccountBalanceQuery())
+                completion(.success(accounts.map({ a in
+                    a.toApi
+                })))
+            } catch let error {
+                fatalError()
+            }
+        }
+    }
+
+    func transactions(query: ApiQueryParams, completion: @escaping (Result<[ApiTransaction], any Error>) -> Void) {
+        <#code#>
+    }
+
 
 //    @available(iOS 17.4, *)
 }

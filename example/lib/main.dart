@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
 import 'dart:async';
 
-import 'package:flutter/services.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_financekit/flutter_financekit.dart';
 import 'package:flutter_financekit/flutter_financekit_types.dart';
 
@@ -17,16 +16,16 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _authStatus = AuthorizationStatus.denied.name;
+  String _authStatus = AuthorizationStatus.notDetermined.name;
 
   @override
   void initState() {
     super.initState();
-    // initPlatformState();
+    get();
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
+  Future<void> get() async {
     FinanceKit.authorizationStatus().then((status) => {
           setState(() {
             _authStatus = "init ${status.name}";
@@ -45,7 +44,8 @@ class _MyAppState extends State<MyApp> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('FinanceKit Auth Status\n$_authStatus', textAlign: TextAlign.center),
+              Text('FinanceKit Auth Status\n$_authStatus',
+                  textAlign: TextAlign.center),
               ElevatedButton(
                   child: const Text("Request"),
                   onPressed: () {

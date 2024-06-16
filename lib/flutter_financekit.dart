@@ -1,5 +1,5 @@
 import 'package:flutter_financekit/flutter_financekit_types.dart';
-import 'package:flutter_financekit/messages.g.dart';
+import 'package:flutter_financekit/src/messages.g.dart';
 import 'package:uuid/uuid.dart';
 import 'flutter_financekit_platform_interface.dart';
 
@@ -23,7 +23,6 @@ import 'flutter_financekit_platform_interface.dart';
 /// the FinanceKit managed entitlement request form. For more information
 /// about managed entitlements, see Provisioning with capabilities.
 class FinanceKit {
-
   ///
   /// Authorization
   ///
@@ -33,7 +32,6 @@ class FinanceKit {
   static Future<bool> isDataAvailable(DataType type) {
     return FlutterFinanceKitPlatform.instance.isDataAvailable(type);
   }
-
 
   /// Checks the authorization status for the calling application.
   static Future<AuthorizationStatus> authorizationStatus() {
@@ -71,7 +69,7 @@ class FinanceKit {
   ///
   /// [isMonitoring] - indicates if the framework should return a History that
   /// indicates the changes to the accounts over time. Defaults to true.
-  static Future<History<Account>> accountHistory({
+  static Future<Stream<Changes<Account>>> accountHistory({
     HistoryToken? since,
     bool isMonitoring = true,
   }) {
@@ -92,7 +90,7 @@ class FinanceKit {
   }
 
   /// Returns the account balance history since a time specified by the provided financial history token.
-  static Future<History<AccountBalance>> accountBalanceHistory(
+  static Future<Stream<Changes<AccountBalance>>> accountBalanceHistory(
     Uuid accountID, {
     HistoryToken? since,
     bool isMonitoring = true,
@@ -115,7 +113,7 @@ class FinanceKit {
   /// specific account and receive updates as the framework enters new
   /// transactions into the finance store. You can, optionally, specify a
   /// starting date and time by providing a historyToken.
-  static Future<History<Transaction>> transactionHistory(
+  static Future<Stream<Changes<Transaction>>> transactionHistory(
     Uuid accountID, {
     HistoryToken? since,
     bool isMonitoring = true,

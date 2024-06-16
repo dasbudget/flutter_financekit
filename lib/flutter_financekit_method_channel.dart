@@ -1,7 +1,6 @@
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_financekit/flutter_financekit_types.dart';
-import 'package:flutter_financekit/messages.g.dart';
+import 'package:flutter_financekit/src/extensions.dart';
+import 'package:flutter_financekit/src/messages.g.dart';
 import 'package:uuid/uuid.dart';
 
 import 'flutter_financekit_platform_interface.dart';
@@ -13,21 +12,21 @@ class MethodChannelFlutterFinanceKit implements FlutterFinanceKitPlatform {
 
   @override
   Future<bool> isDataAvailable(DataType type) async {
-    throw _api.isDataAvailable(type);
+    return _api.isDataAvailable(type);
   }
 
   @override
   Future<AuthorizationStatus> authorizationStatus() async {
-    throw _api.authorizationStatus();
+    return _api.authorizationStatus();
   }
 
   @override
   Future<AuthorizationStatus> requestAuthorization() async {
-    throw _api.requestAuthorization();
+    return _api.requestAuthorization();
   }
 
   @override
-  Future<History<AccountBalance>> accountBalanceHistory(Uuid accountID,
+  Future<Stream<Changes<AccountBalance>>> accountBalanceHistory(Uuid accountID,
       {HistoryToken? since, bool isMonitoring = true}) async {
     // TODO: implement accountBalanceHistory
     throw UnimplementedError();
@@ -36,12 +35,15 @@ class MethodChannelFlutterFinanceKit implements FlutterFinanceKitPlatform {
   @override
   Future<List<AccountBalance>> accountBalances(
       QueryParams<AccountBalance> query) async {
-    // TODO: implement accountBalances
-    throw UnimplementedError();
+    // todo params
+    return _api.accountBalances(ApiQueryParams()).then((value) {
+      value.removeWhere((element) => element == null);
+      return value.map<AccountBalance>((e) => e!).toList();
+    });
   }
 
   @override
-  Future<History<Account>> accountHistory(
+  Future<Stream<Changes<Account>>> accountHistory(
       {HistoryToken? since, bool isMonitoring = true}) async {
     // TODO: implement accountHistory
     throw UnimplementedError();
@@ -49,12 +51,15 @@ class MethodChannelFlutterFinanceKit implements FlutterFinanceKitPlatform {
 
   @override
   Future<List<Account>> accounts(QueryParams<Account> query) async {
-    // TODO: implement accounts
-    throw UnimplementedError();
+    // todo query
+    return _api.accounts(ApiQueryParams()).then((value) {
+      value.removeWhere((element) => element == null);
+      return value.map<Account>((e) => e!).toList();
+    });
   }
 
   @override
-  Future<History<Transaction>> transactionHistory(Uuid accountID,
+  Future<Stream<Changes<Transaction>>> transactionHistory(Uuid accountID,
       {HistoryToken? since, bool isMonitoring = true}) async {
     // TODO: implement transactionHistory
     throw UnimplementedError();
@@ -62,7 +67,10 @@ class MethodChannelFlutterFinanceKit implements FlutterFinanceKitPlatform {
 
   @override
   Future<List<Transaction>> transactions(QueryParams<Transaction> query) async {
-    // TODO: implement transactions
-    throw UnimplementedError();
+    // todo query
+    return _api.transactions(ApiQueryParams()).then((value) {
+      value.removeWhere((e) => e == null);
+      return value.map<Transaction>((e) => e!.convert()).toList();
+    });
   }
 }
