@@ -85,14 +85,14 @@ enum ApiTransactionStatus {
 }
 
 /// Values that the framework uses to describe transactions as credits or debits.
-enum CreditDebitIndicator {
+enum ApiCreditDebitIndicator {
   /// A value that indicates an amount which increases an asset or decreases a liability.
   credit,
   /// A value that indicates an amount which increases a liability or decreases an asset.
   debit,
 }
 
-enum AccountType {
+enum ApiAccountType {
   /// An asset account.
   asset,
   /// A liability account.
@@ -103,7 +103,7 @@ enum AccountType {
 ///
 /// It can contain an indication of funds immediately available to the customer,
 /// fund with all booked transactions (this excludes pending transactions), or both.
-enum CurrentBalance {
+enum ApiCurrentBalance {
   /// Only the available balance is present.
   available,
   /// Both available and booked balances are present.
@@ -273,7 +273,7 @@ class ApiTransaction {
   String accountID;
 
   /// An indicator that describes if the transaction is a credit or a debit.
-  CreditDebitIndicator creditDebitIndicator;
+  ApiCreditDebitIndicator creditDebitIndicator;
 
   /// The total amount of the transaction, if it was carried out in a foreign currency.
   ApiCurrencyAmount? foreignCurrencyAmount;
@@ -332,7 +332,7 @@ class ApiTransaction {
     return ApiTransaction(
       id: result[0]! as String,
       accountID: result[1]! as String,
-      creditDebitIndicator: CreditDebitIndicator.values[result[2]! as int],
+      creditDebitIndicator: ApiCreditDebitIndicator.values[result[2]! as int],
       foreignCurrencyAmount: result[3] != null
           ? ApiCurrencyAmount.decode(result[3]! as List<Object?>)
           : null,
@@ -352,8 +352,8 @@ class ApiTransaction {
 
 /// A structure that describes the credit information associated with an account.
 /// Credit information includes credit limits, payment dates, and minimum payment dates and amounts for current and upcoming payments.
-class AccountCreditInformation {
-  AccountCreditInformation({
+class ApiAccountCreditInformation {
+  ApiAccountCreditInformation({
     this.creditLimit,
     this.minimumNextPaymentAmount,
     this.nextPaymentDueDate,
@@ -381,9 +381,9 @@ class AccountCreditInformation {
     ];
   }
 
-  static AccountCreditInformation decode(Object result) {
+  static ApiAccountCreditInformation decode(Object result) {
     result as List<Object?>;
-    return AccountCreditInformation(
+    return ApiAccountCreditInformation(
       creditLimit: result[0] != null
           ? ApiCurrencyAmount.decode(result[0]! as List<Object?>)
           : null,
@@ -399,8 +399,8 @@ class AccountCreditInformation {
 }
 
 /// A structure that describes an account balance.
-class Balance {
-  Balance({
+class ApiBalance {
+  ApiBalance({
     required this.amount,
     required this.asOfDate,
     required this.creditDebitIndicator,
@@ -413,7 +413,7 @@ class Balance {
   int asOfDate;
 
   /// A value that indicates whether the balance is a credit or a debit balance.
-  CreditDebitIndicator creditDebitIndicator;
+  ApiCreditDebitIndicator creditDebitIndicator;
 
   Object encode() {
     return <Object?>[
@@ -423,19 +423,19 @@ class Balance {
     ];
   }
 
-  static Balance decode(Object result) {
+  static ApiBalance decode(Object result) {
     result as List<Object?>;
-    return Balance(
+    return ApiBalance(
       amount: ApiCurrencyAmount.decode(result[0]! as List<Object?>),
       asOfDate: result[1]! as int,
-      creditDebitIndicator: CreditDebitIndicator.values[result[2]! as int],
+      creditDebitIndicator: ApiCreditDebitIndicator.values[result[2]! as int],
     );
   }
 }
 
 /// A structure that describes the financial balance of an account at a specific point in time.
-class AccountBalance {
-  AccountBalance({
+class ApiAccountBalance {
+  ApiAccountBalance({
     required this.accountID,
     this.available,
     this.booked,
@@ -448,16 +448,16 @@ class AccountBalance {
   String accountID;
 
   /// The available balance, if present.
-  Balance? available;
+  ApiBalance? available;
 
   /// The booked balance, if present.
-  Balance? booked;
+  ApiBalance? booked;
 
   /// The balance currency.
   String currencyCode;
 
   /// The balance at a particular moment in time.
-  CurrentBalance currentBalance;
+  ApiCurrentBalance currentBalance;
 
   /// A unique account balance ID.
   String id;
@@ -473,18 +473,18 @@ class AccountBalance {
     ];
   }
 
-  static AccountBalance decode(Object result) {
+  static ApiAccountBalance decode(Object result) {
     result as List<Object?>;
-    return AccountBalance(
+    return ApiAccountBalance(
       accountID: result[0]! as String,
       available: result[1] != null
-          ? Balance.decode(result[1]! as List<Object?>)
+          ? ApiBalance.decode(result[1]! as List<Object?>)
           : null,
       booked: result[2] != null
-          ? Balance.decode(result[2]! as List<Object?>)
+          ? ApiBalance.decode(result[2]! as List<Object?>)
           : null,
       currencyCode: result[3]! as String,
-      currentBalance: CurrentBalance.values[result[4]! as int],
+      currentBalance: ApiCurrentBalance.values[result[4]! as int],
       id: result[5]! as String,
     );
   }
@@ -492,8 +492,8 @@ class AccountBalance {
 
 /// A structure that describes the characteristics of a liability account.
 /// A liability account includes accounts such as credit cards.
-class LiabilityAccount {
-  LiabilityAccount({
+class ApiLiabilityAccount {
+  ApiLiabilityAccount({
     this.accountDescription,
     required this.creditInformation,
     required this.currencyCode,
@@ -507,7 +507,7 @@ class LiabilityAccount {
   String? accountDescription;
 
   /// Information regarding credits to the account.
-  AccountCreditInformation creditInformation;
+  ApiAccountCreditInformation creditInformation;
 
   /// An ISO 4217 currency code that identifies the currency in which the account is held.
   String currencyCode;
@@ -536,11 +536,11 @@ class LiabilityAccount {
     ];
   }
 
-  static LiabilityAccount decode(Object result) {
+  static ApiLiabilityAccount decode(Object result) {
     result as List<Object?>;
-    return LiabilityAccount(
+    return ApiLiabilityAccount(
       accountDescription: result[0] as String?,
-      creditInformation: AccountCreditInformation.decode(result[1]! as List<Object?>),
+      creditInformation: ApiAccountCreditInformation.decode(result[1]! as List<Object?>),
       currencyCode: result[2]! as String,
       displayName: result[3]! as String,
       id: result[4]! as String,
@@ -552,8 +552,8 @@ class LiabilityAccount {
 
 /// A structure that describes the characteristics of an asset account.
 /// An asset account includes accounts such as a bank account or a savings account.
-class AssetAccount {
-  AssetAccount({
+class ApiAssetAccount {
+  ApiAssetAccount({
     this.accountDescription,
     required this.currencyCode,
     required this.displayName,
@@ -591,9 +591,9 @@ class AssetAccount {
     ];
   }
 
-  static AssetAccount decode(Object result) {
+  static ApiAssetAccount decode(Object result) {
     result as List<Object?>;
-    return AssetAccount(
+    return ApiAssetAccount(
       accountDescription: result[0] as String?,
       currencyCode: result[1]! as String,
       displayName: result[2]! as String,
@@ -619,7 +619,7 @@ class ApiAccount {
     this.assetAccount,
   });
 
-  AccountType type;
+  ApiAccountType type;
 
   /// A person’s description of this account.
   String? accountDescription;
@@ -640,10 +640,10 @@ class ApiAccount {
   int? openingDate;
 
   /// A liability account.
-  LiabilityAccount? liabilityAccount;
+  ApiLiabilityAccount? liabilityAccount;
 
   /// An asset account.
-  AssetAccount? assetAccount;
+  ApiAssetAccount? assetAccount;
 
   Object encode() {
     return <Object?>[
@@ -662,7 +662,7 @@ class ApiAccount {
   static ApiAccount decode(Object result) {
     result as List<Object?>;
     return ApiAccount(
-      type: AccountType.values[result[0]! as int],
+      type: ApiAccountType.values[result[0]! as int],
       accountDescription: result[1] as String?,
       currencyCode: result[2]! as String,
       displayName: result[3]! as String,
@@ -670,54 +670,120 @@ class ApiAccount {
       institutionName: result[5]! as String,
       openingDate: result[6] as int?,
       liabilityAccount: result[7] != null
-          ? LiabilityAccount.decode(result[7]! as List<Object?>)
+          ? ApiLiabilityAccount.decode(result[7]! as List<Object?>)
           : null,
       assetAccount: result[8] != null
-          ? AssetAccount.decode(result[8]! as List<Object?>)
+          ? ApiAssetAccount.decode(result[8]! as List<Object?>)
           : null,
     );
   }
 }
 
-class _FinanceKitApiCodec extends StandardMessageCodec {
-  const _FinanceKitApiCodec();
+class ApiHistoryToken {
+  ApiHistoryToken({
+  });
+
+  Object encode() {
+    return <Object?>[
+    ];
+  }
+
+  static ApiHistoryToken decode(Object result) {
+    result as List<Object?>;
+    return ApiHistoryToken(
+    );
+  }
+}
+
+/// A structure that records changes to the finance store.
+class ApiChanges {
+  ApiChanges({
+    required this.deleted,
+    required this.inserted,
+    required this.newToken,
+    required this.updated,
+  });
+
+  /// An array of model objects identifiers that the framework deleted from the finance store.
+  List<String?> deleted;
+
+  /// An array of model objects the framework inserted into the finance store.
+  List<dynamic?> inserted;
+
+  /// An updated history token.
+  ApiHistoryToken newToken;
+
+  /// An array of model objects that the framework updated in the finance store.
+  List<dynamic?> updated;
+
+  Object encode() {
+    return <Object?>[
+      deleted,
+      inserted,
+      newToken.encode(),
+      updated,
+    ];
+  }
+
+  static ApiChanges decode(Object result) {
+    result as List<Object?>;
+    return ApiChanges(
+      deleted: (result[0] as List<Object?>?)!.cast<String?>(),
+      inserted: (result[1] as List<Object?>?)!.cast<dynamic?>(),
+      newToken: ApiHistoryToken.decode(result[2]! as List<Object?>),
+      updated: (result[3] as List<Object?>?)!.cast<dynamic?>(),
+    );
+  }
+}
+
+class FinanceKitApiCodec extends StandardMessageCodec {
+  const FinanceKitApiCodec();
   @override
   void writeValue(WriteBuffer buffer, Object? value) {
-    if (value is AccountBalance) {
+    if (value is ApiAccount) {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
-    } else if (value is AccountCreditInformation) {
+    } else if (value is ApiAccountBalance) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    } else if (value is ApiAccount) {
+    } else if (value is ApiAccountCreditInformation) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    } else if (value is ApiCurrencyAmount) {
+    } else if (value is ApiAssetAccount) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
-    } else if (value is ApiCurrencyAmount) {
+    } else if (value is ApiBalance) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
-    } else if (value is ApiPredicate) {
+    } else if (value is ApiChanges) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    } else if (value is ApiQueryParams) {
+    } else if (value is ApiCurrencyAmount) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
-    } else if (value is ApiSortDescriptor) {
+    } else if (value is ApiCurrencyAmount) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
-    } else if (value is ApiTransaction) {
+    } else if (value is ApiHistoryToken) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
-    } else if (value is AssetAccount) {
+    } else if (value is ApiLiabilityAccount) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
-    } else if (value is Balance) {
+    } else if (value is ApiPredicate) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    } else if (value is LiabilityAccount) {
+    } else if (value is ApiQueryParams) {
       buffer.putUint8(139);
+      writeValue(buffer, value.encode());
+    } else if (value is ApiSortDescriptor) {
+      buffer.putUint8(140);
+      writeValue(buffer, value.encode());
+    } else if (value is ApiTransaction) {
+      buffer.putUint8(141);
+      writeValue(buffer, value.encode());
+    } else if (value is dynamic) {
+      buffer.putUint8(142);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -728,29 +794,35 @@ class _FinanceKitApiCodec extends StandardMessageCodec {
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
       case 128: 
-        return AccountBalance.decode(readValue(buffer)!);
-      case 129: 
-        return AccountCreditInformation.decode(readValue(buffer)!);
-      case 130: 
         return ApiAccount.decode(readValue(buffer)!);
+      case 129: 
+        return ApiAccountBalance.decode(readValue(buffer)!);
+      case 130: 
+        return ApiAccountCreditInformation.decode(readValue(buffer)!);
       case 131: 
-        return ApiCurrencyAmount.decode(readValue(buffer)!);
+        return ApiAssetAccount.decode(readValue(buffer)!);
       case 132: 
-        return ApiCurrencyAmount.decode(readValue(buffer)!);
+        return ApiBalance.decode(readValue(buffer)!);
       case 133: 
-        return ApiPredicate.decode(readValue(buffer)!);
+        return ApiChanges.decode(readValue(buffer)!);
       case 134: 
-        return ApiQueryParams.decode(readValue(buffer)!);
+        return ApiCurrencyAmount.decode(readValue(buffer)!);
       case 135: 
-        return ApiSortDescriptor.decode(readValue(buffer)!);
+        return ApiCurrencyAmount.decode(readValue(buffer)!);
       case 136: 
-        return ApiTransaction.decode(readValue(buffer)!);
+        return ApiHistoryToken.decode(readValue(buffer)!);
       case 137: 
-        return AssetAccount.decode(readValue(buffer)!);
+        return ApiLiabilityAccount.decode(readValue(buffer)!);
       case 138: 
-        return Balance.decode(readValue(buffer)!);
+        return ApiPredicate.decode(readValue(buffer)!);
       case 139: 
-        return LiabilityAccount.decode(readValue(buffer)!);
+        return ApiQueryParams.decode(readValue(buffer)!);
+      case 140: 
+        return ApiSortDescriptor.decode(readValue(buffer)!);
+      case 141: 
+        return ApiTransaction.decode(readValue(buffer)!);
+      case 142: 
+        return dynamic.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -765,7 +837,7 @@ class FinanceKitApi {
       : __pigeon_binaryMessenger = binaryMessenger;
   final BinaryMessenger? __pigeon_binaryMessenger;
 
-  static const MessageCodec<Object?> pigeonChannelCodec = _FinanceKitApiCodec();
+  static const MessageCodec<Object?> pigeonChannelCodec = FinanceKitApiCodec();
 
   Future<bool> isDataAvailable(ApiDataType type) async {
     const String __pigeon_channelName = 'dev.flutter.pigeon.flutter_financekit.FinanceKitApi.isDataAvailable';
@@ -875,7 +947,7 @@ class FinanceKitApi {
     }
   }
 
-  Future<List<AccountBalance?>> accountBalances(ApiQueryParams query) async {
+  Future<List<ApiAccountBalance?>> accountBalances(ApiQueryParams query) async {
     const String __pigeon_channelName = 'dev.flutter.pigeon.flutter_financekit.FinanceKitApi.accountBalances';
     final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
       __pigeon_channelName,
@@ -898,7 +970,7 @@ class FinanceKitApi {
         message: 'Host platform returned null value for non-null return value.',
       );
     } else {
-      return (__pigeon_replyList[0] as List<Object?>?)!.cast<AccountBalance?>();
+      return (__pigeon_replyList[0] as List<Object?>?)!.cast<ApiAccountBalance?>();
     }
   }
 
@@ -926,6 +998,33 @@ class FinanceKitApi {
       );
     } else {
       return (__pigeon_replyList[0] as List<Object?>?)!.cast<ApiTransaction?>();
+    }
+  }
+
+  Future<List<ApiChanges?>> test() async {
+    const String __pigeon_channelName = 'dev.flutter.pigeon.flutter_financekit.FinanceKitApi.test';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+      __pigeon_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: __pigeon_binaryMessenger,
+    );
+    final List<Object?>? __pigeon_replyList =
+        await __pigeon_channel.send(null) as List<Object?>?;
+    if (__pigeon_replyList == null) {
+      throw _createConnectionError(__pigeon_channelName);
+    } else if (__pigeon_replyList.length > 1) {
+      throw PlatformException(
+        code: __pigeon_replyList[0]! as String,
+        message: __pigeon_replyList[1] as String?,
+        details: __pigeon_replyList[2],
+      );
+    } else if (__pigeon_replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (__pigeon_replyList[0] as List<Object?>?)!.cast<ApiChanges?>();
     }
   }
 }

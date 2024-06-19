@@ -108,14 +108,14 @@ enum ApiTransactionStatus: Int {
 }
 
 /// Values that the framework uses to describe transactions as credits or debits.
-enum CreditDebitIndicator: Int {
+enum ApiCreditDebitIndicator: Int {
   /// A value that indicates an amount which increases an asset or decreases a liability.
   case credit = 0
   /// A value that indicates an amount which increases a liability or decreases an asset.
   case debit = 1
 }
 
-enum AccountType: Int {
+enum ApiAccountType: Int {
   /// An asset account.
   case asset = 0
   /// A liability account.
@@ -126,7 +126,7 @@ enum AccountType: Int {
 ///
 /// It can contain an indication of funds immediately available to the customer,
 /// fund with all booked transactions (this excludes pending transactions), or both.
-enum CurrentBalance: Int {
+enum ApiCurrentBalance: Int {
   /// Only the available balance is present.
   case available = 0
   /// Both available and booked balances are present.
@@ -260,7 +260,7 @@ struct ApiTransaction {
   /// The account ID the transaction belongs to.
   var accountID: String
   /// An indicator that describes if the transaction is a credit or a debit.
-  var creditDebitIndicator: CreditDebitIndicator
+  var creditDebitIndicator: ApiCreditDebitIndicator
   /// The total amount of the transaction, if it was carried out in a foreign currency.
   var foreignCurrencyAmount: ApiCurrencyAmount? = nil
   /// The currency exchange rate, if the transaction was carried out in a foreign currency.
@@ -287,7 +287,7 @@ struct ApiTransaction {
   static func fromList(_ list: [Any?]) -> ApiTransaction? {
     let id = list[0] as! String
     let accountID = list[1] as! String
-    let creditDebitIndicator = CreditDebitIndicator(rawValue: list[2] as! Int)!
+    let creditDebitIndicator = ApiCreditDebitIndicator(rawValue: list[2] as! Int)!
     var foreignCurrencyAmount: ApiCurrencyAmount? = nil
     if let foreignCurrencyAmountList: [Any?] = nilOrValue(list[3]) {
       foreignCurrencyAmount = ApiCurrencyAmount.fromList(foreignCurrencyAmountList)
@@ -344,7 +344,7 @@ struct ApiTransaction {
 /// Credit information includes credit limits, payment dates, and minimum payment dates and amounts for current and upcoming payments.
 ///
 /// Generated class from Pigeon that represents data sent in messages.
-struct AccountCreditInformation {
+struct ApiAccountCreditInformation {
   /// The credit limit of the account.
   var creditLimit: ApiCurrencyAmount? = nil
   /// Minimum amount of the next non-overdue payment.
@@ -354,7 +354,7 @@ struct AccountCreditInformation {
   /// The amount by which the account is overdue for the current period.
   var overduePaymentAmount: ApiCurrencyAmount? = nil
 
-  static func fromList(_ list: [Any?]) -> AccountCreditInformation? {
+  static func fromList(_ list: [Any?]) -> ApiAccountCreditInformation? {
     var creditLimit: ApiCurrencyAmount? = nil
     if let creditLimitList: [Any?] = nilOrValue(list[0]) {
       creditLimit = ApiCurrencyAmount.fromList(creditLimitList)
@@ -369,7 +369,7 @@ struct AccountCreditInformation {
       overduePaymentAmount = ApiCurrencyAmount.fromList(overduePaymentAmountList)
     }
 
-    return AccountCreditInformation(
+    return ApiAccountCreditInformation(
       creditLimit: creditLimit,
       minimumNextPaymentAmount: minimumNextPaymentAmount,
       nextPaymentDueDate: nextPaymentDueDate,
@@ -389,20 +389,20 @@ struct AccountCreditInformation {
 /// A structure that describes an account balance.
 ///
 /// Generated class from Pigeon that represents data sent in messages.
-struct Balance {
+struct ApiBalance {
   /// The amount of the balance.
   var amount: ApiCurrencyAmount
   /// The date and time the system calculated the balance.
   var asOfDate: Int64
   /// A value that indicates whether the balance is a credit or a debit balance.
-  var creditDebitIndicator: CreditDebitIndicator
+  var creditDebitIndicator: ApiCreditDebitIndicator
 
-  static func fromList(_ list: [Any?]) -> Balance? {
+  static func fromList(_ list: [Any?]) -> ApiBalance? {
     let amount = ApiCurrencyAmount.fromList(list[0] as! [Any?])!
     let asOfDate = list[1] is Int64 ? list[1] as! Int64 : Int64(list[1] as! Int32)
-    let creditDebitIndicator = CreditDebitIndicator(rawValue: list[2] as! Int)!
+    let creditDebitIndicator = ApiCreditDebitIndicator(rawValue: list[2] as! Int)!
 
-    return Balance(
+    return ApiBalance(
       amount: amount,
       asOfDate: asOfDate,
       creditDebitIndicator: creditDebitIndicator
@@ -420,35 +420,35 @@ struct Balance {
 /// A structure that describes the financial balance of an account at a specific point in time.
 ///
 /// Generated class from Pigeon that represents data sent in messages.
-struct AccountBalance {
+struct ApiAccountBalance {
   /// The account ID the balance belongs to.
   var accountID: String
   /// The available balance, if present.
-  var available: Balance? = nil
+  var available: ApiBalance? = nil
   /// The booked balance, if present.
-  var booked: Balance? = nil
+  var booked: ApiBalance? = nil
   /// The balance currency.
   var currencyCode: String
   /// The balance at a particular moment in time.
-  var currentBalance: CurrentBalance
+  var currentBalance: ApiCurrentBalance
   /// A unique account balance ID.
   var id: String
 
-  static func fromList(_ list: [Any?]) -> AccountBalance? {
+  static func fromList(_ list: [Any?]) -> ApiAccountBalance? {
     let accountID = list[0] as! String
-    var available: Balance? = nil
+    var available: ApiBalance? = nil
     if let availableList: [Any?] = nilOrValue(list[1]) {
-      available = Balance.fromList(availableList)
+      available = ApiBalance.fromList(availableList)
     }
-    var booked: Balance? = nil
+    var booked: ApiBalance? = nil
     if let bookedList: [Any?] = nilOrValue(list[2]) {
-      booked = Balance.fromList(bookedList)
+      booked = ApiBalance.fromList(bookedList)
     }
     let currencyCode = list[3] as! String
-    let currentBalance = CurrentBalance(rawValue: list[4] as! Int)!
+    let currentBalance = ApiCurrentBalance(rawValue: list[4] as! Int)!
     let id = list[5] as! String
 
-    return AccountBalance(
+    return ApiAccountBalance(
       accountID: accountID,
       available: available,
       booked: booked,
@@ -473,11 +473,11 @@ struct AccountBalance {
 /// A liability account includes accounts such as credit cards.
 ///
 /// Generated class from Pigeon that represents data sent in messages.
-struct LiabilityAccount {
+struct ApiLiabilityAccount {
   /// A description of the account.
   var accountDescription: String? = nil
   /// Information regarding credits to the account.
-  var creditInformation: AccountCreditInformation
+  var creditInformation: ApiAccountCreditInformation
   /// An ISO 4217 currency code that identifies the currency in which the account is held.
   var currencyCode: String
   /// The name for the account given by an individual.
@@ -489,16 +489,16 @@ struct LiabilityAccount {
   /// The date the account was opened, if known.
   var openingDate: Int64? = nil
 
-  static func fromList(_ list: [Any?]) -> LiabilityAccount? {
+  static func fromList(_ list: [Any?]) -> ApiLiabilityAccount? {
     let accountDescription: String? = nilOrValue(list[0])
-    let creditInformation = AccountCreditInformation.fromList(list[1] as! [Any?])!
+    let creditInformation = ApiAccountCreditInformation.fromList(list[1] as! [Any?])!
     let currencyCode = list[2] as! String
     let displayName = list[3] as! String
     let id = list[4] as! String
     let institutionName = list[5] as! String
     let openingDate: Int64? = isNullish(list[6]) ? nil : (list[6] is Int64? ? list[6] as! Int64? : Int64(list[6] as! Int32))
 
-    return LiabilityAccount(
+    return ApiLiabilityAccount(
       accountDescription: accountDescription,
       creditInformation: creditInformation,
       currencyCode: currencyCode,
@@ -525,7 +525,7 @@ struct LiabilityAccount {
 /// An asset account includes accounts such as a bank account or a savings account.
 ///
 /// Generated class from Pigeon that represents data sent in messages.
-struct AssetAccount {
+struct ApiAssetAccount {
   /// The description of the account.
   var accountDescription: String? = nil
   /// ISO 4217 currency code that identifies the currency in which the account is held.
@@ -539,7 +539,7 @@ struct AssetAccount {
   /// The date the account was opened, if known.
   var openingDate: Int64? = nil
 
-  static func fromList(_ list: [Any?]) -> AssetAccount? {
+  static func fromList(_ list: [Any?]) -> ApiAssetAccount? {
     let accountDescription: String? = nilOrValue(list[0])
     let currencyCode = list[1] as! String
     let displayName = list[2] as! String
@@ -547,7 +547,7 @@ struct AssetAccount {
     let institutionName = list[4] as! String
     let openingDate: Int64? = isNullish(list[5]) ? nil : (list[5] is Int64? ? list[5] as! Int64? : Int64(list[5] as! Int32))
 
-    return AssetAccount(
+    return ApiAssetAccount(
       accountDescription: accountDescription,
       currencyCode: currencyCode,
       displayName: displayName,
@@ -573,7 +573,7 @@ struct AssetAccount {
 ///
 /// Generated class from Pigeon that represents data sent in messages.
 struct ApiAccount {
-  var type: AccountType
+  var type: ApiAccountType
   /// A person’s description of this account.
   var accountDescription: String? = nil
   /// The ISO 4217 currency code that identifies the currency that denominates the account.
@@ -587,25 +587,25 @@ struct ApiAccount {
   /// The date the account was opened, if known.
   var openingDate: Int64? = nil
   /// A liability account.
-  var liabilityAccount: LiabilityAccount? = nil
+  var liabilityAccount: ApiLiabilityAccount? = nil
   /// An asset account.
-  var assetAccount: AssetAccount? = nil
+  var assetAccount: ApiAssetAccount? = nil
 
   static func fromList(_ list: [Any?]) -> ApiAccount? {
-    let type = AccountType(rawValue: list[0] as! Int)!
+    let type = ApiAccountType(rawValue: list[0] as! Int)!
     let accountDescription: String? = nilOrValue(list[1])
     let currencyCode = list[2] as! String
     let displayName = list[3] as! String
     let id = list[4] as! String
     let institutionName = list[5] as! String
     let openingDate: Int64? = isNullish(list[6]) ? nil : (list[6] is Int64? ? list[6] as! Int64? : Int64(list[6] as! Int32))
-    var liabilityAccount: LiabilityAccount? = nil
+    var liabilityAccount: ApiLiabilityAccount? = nil
     if let liabilityAccountList: [Any?] = nilOrValue(list[7]) {
-      liabilityAccount = LiabilityAccount.fromList(liabilityAccountList)
+      liabilityAccount = ApiLiabilityAccount.fromList(liabilityAccountList)
     }
-    var assetAccount: AssetAccount? = nil
+    var assetAccount: ApiAssetAccount? = nil
     if let assetAccountList: [Any?] = nilOrValue(list[8]) {
-      assetAccount = AssetAccount.fromList(assetAccountList)
+      assetAccount = ApiAssetAccount.fromList(assetAccountList)
     }
 
     return ApiAccount(
@@ -635,33 +635,89 @@ struct ApiAccount {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct ApiHistoryToken {
+
+  static func fromList(_ list: [Any?]) -> ApiHistoryToken? {
+
+    return ApiHistoryToken(
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+    ]
+  }
+}
+
+/// A structure that records changes to the finance store.
+///
+/// Generated class from Pigeon that represents data sent in messages.
+struct ApiChanges {
+  /// An array of model objects identifiers that the framework deleted from the finance store.
+  var deleted: [String?]
+  /// An array of model objects the framework inserted into the finance store.
+  var inserted: [dynamic?]
+  /// An updated history token.
+  var newToken: ApiHistoryToken
+  /// An array of model objects that the framework updated in the finance store.
+  var updated: [dynamic?]
+
+  static func fromList(_ list: [Any?]) -> ApiChanges? {
+    let deleted = list[0] as! [String?]
+    let inserted = list[1] as! [dynamic?]
+    let newToken = ApiHistoryToken.fromList(list[2] as! [Any?])!
+    let updated = list[3] as! [dynamic?]
+
+    return ApiChanges(
+      deleted: deleted,
+      inserted: inserted,
+      newToken: newToken,
+      updated: updated
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      deleted,
+      inserted,
+      newToken.toList(),
+      updated,
+    ]
+  }
+}
+
 private class FinanceKitApiCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
       case 128:
-        return AccountBalance.fromList(self.readValue() as! [Any?])
-      case 129:
-        return AccountCreditInformation.fromList(self.readValue() as! [Any?])
-      case 130:
         return ApiAccount.fromList(self.readValue() as! [Any?])
+      case 129:
+        return ApiAccountBalance.fromList(self.readValue() as! [Any?])
+      case 130:
+        return ApiAccountCreditInformation.fromList(self.readValue() as! [Any?])
       case 131:
-        return ApiCurrencyAmount.fromList(self.readValue() as! [Any?])
+        return ApiAssetAccount.fromList(self.readValue() as! [Any?])
       case 132:
-        return ApiCurrencyAmount.fromList(self.readValue() as! [Any?])
+        return ApiBalance.fromList(self.readValue() as! [Any?])
       case 133:
-        return ApiPredicate.fromList(self.readValue() as! [Any?])
+        return ApiChanges.fromList(self.readValue() as! [Any?])
       case 134:
-        return ApiQueryParams.fromList(self.readValue() as! [Any?])
+        return ApiCurrencyAmount.fromList(self.readValue() as! [Any?])
       case 135:
-        return ApiSortDescriptor.fromList(self.readValue() as! [Any?])
+        return ApiCurrencyAmount.fromList(self.readValue() as! [Any?])
       case 136:
-        return ApiTransaction.fromList(self.readValue() as! [Any?])
+        return ApiHistoryToken.fromList(self.readValue() as! [Any?])
       case 137:
-        return AssetAccount.fromList(self.readValue() as! [Any?])
+        return ApiLiabilityAccount.fromList(self.readValue() as! [Any?])
       case 138:
-        return Balance.fromList(self.readValue() as! [Any?])
+        return ApiPredicate.fromList(self.readValue() as! [Any?])
       case 139:
-        return LiabilityAccount.fromList(self.readValue() as! [Any?])
+        return ApiQueryParams.fromList(self.readValue() as! [Any?])
+      case 140:
+        return ApiSortDescriptor.fromList(self.readValue() as! [Any?])
+      case 141:
+        return ApiTransaction.fromList(self.readValue() as! [Any?])
+      case 142:
+        return dynamic.fromList(self.readValue() as! [Any?])
       default:
         return super.readValue(ofType: type)
     }
@@ -670,41 +726,50 @@ private class FinanceKitApiCodecReader: FlutterStandardReader {
 
 private class FinanceKitApiCodecWriter: FlutterStandardWriter {
   override func writeValue(_ value: Any) {
-    if let value = value as? AccountBalance {
+    if let value = value as? ApiAccount {
       super.writeByte(128)
       super.writeValue(value.toList())
-    } else if let value = value as? AccountCreditInformation {
+    } else if let value = value as? ApiAccountBalance {
       super.writeByte(129)
       super.writeValue(value.toList())
-    } else if let value = value as? ApiAccount {
+    } else if let value = value as? ApiAccountCreditInformation {
       super.writeByte(130)
       super.writeValue(value.toList())
-    } else if let value = value as? ApiCurrencyAmount {
+    } else if let value = value as? ApiAssetAccount {
       super.writeByte(131)
       super.writeValue(value.toList())
-    } else if let value = value as? ApiCurrencyAmount {
+    } else if let value = value as? ApiBalance {
       super.writeByte(132)
       super.writeValue(value.toList())
-    } else if let value = value as? ApiPredicate {
+    } else if let value = value as? ApiChanges {
       super.writeByte(133)
       super.writeValue(value.toList())
-    } else if let value = value as? ApiQueryParams {
+    } else if let value = value as? ApiCurrencyAmount {
       super.writeByte(134)
       super.writeValue(value.toList())
-    } else if let value = value as? ApiSortDescriptor {
+    } else if let value = value as? ApiCurrencyAmount {
       super.writeByte(135)
       super.writeValue(value.toList())
-    } else if let value = value as? ApiTransaction {
+    } else if let value = value as? ApiHistoryToken {
       super.writeByte(136)
       super.writeValue(value.toList())
-    } else if let value = value as? AssetAccount {
+    } else if let value = value as? ApiLiabilityAccount {
       super.writeByte(137)
       super.writeValue(value.toList())
-    } else if let value = value as? Balance {
+    } else if let value = value as? ApiPredicate {
       super.writeByte(138)
       super.writeValue(value.toList())
-    } else if let value = value as? LiabilityAccount {
+    } else if let value = value as? ApiQueryParams {
       super.writeByte(139)
+      super.writeValue(value.toList())
+    } else if let value = value as? ApiSortDescriptor {
+      super.writeByte(140)
+      super.writeValue(value.toList())
+    } else if let value = value as? ApiTransaction {
+      super.writeByte(141)
+      super.writeValue(value.toList())
+    } else if let value = value as? dynamic {
+      super.writeByte(142)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -732,8 +797,9 @@ protocol FinanceKitApi {
   func authorizationStatus(completion: @escaping (Result<ApiAuthorizationStatus, Error>) -> Void)
   func requestAuthorization(completion: @escaping (Result<ApiAuthorizationStatus, Error>) -> Void)
   func accounts(query: ApiQueryParams, completion: @escaping (Result<[ApiAccount], Error>) -> Void)
-  func accountBalances(query: ApiQueryParams, completion: @escaping (Result<[AccountBalance], Error>) -> Void)
+  func accountBalances(query: ApiQueryParams, completion: @escaping (Result<[ApiAccountBalance], Error>) -> Void)
   func transactions(query: ApiQueryParams, completion: @escaping (Result<[ApiTransaction], Error>) -> Void)
+  func test() throws -> [ApiChanges]
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -837,6 +903,19 @@ class FinanceKitApiSetup {
       }
     } else {
       transactionsChannel.setMessageHandler(nil)
+    }
+    let testChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.flutter_financekit.FinanceKitApi.test", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      testChannel.setMessageHandler { _, reply in
+        do {
+          let result = try api.test()
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      testChannel.setMessageHandler(nil)
     }
   }
 }

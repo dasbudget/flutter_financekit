@@ -137,27 +137,27 @@ enum class ApiTransactionStatus(val raw: Int) {
 }
 
 /** Values that the framework uses to describe transactions as credits or debits. */
-enum class CreditDebitIndicator(val raw: Int) {
+enum class ApiCreditDebitIndicator(val raw: Int) {
   /** A value that indicates an amount which increases an asset or decreases a liability. */
   CREDIT(0),
   /** A value that indicates an amount which increases a liability or decreases an asset. */
   DEBIT(1);
 
   companion object {
-    fun ofRaw(raw: Int): CreditDebitIndicator? {
+    fun ofRaw(raw: Int): ApiCreditDebitIndicator? {
       return values().firstOrNull { it.raw == raw }
     }
   }
 }
 
-enum class AccountType(val raw: Int) {
+enum class ApiAccountType(val raw: Int) {
   /** An asset account. */
   ASSET(0),
   /** A liability account. */
   LIABILITY(1);
 
   companion object {
-    fun ofRaw(raw: Int): AccountType? {
+    fun ofRaw(raw: Int): ApiAccountType? {
       return values().firstOrNull { it.raw == raw }
     }
   }
@@ -169,7 +169,7 @@ enum class AccountType(val raw: Int) {
  * It can contain an indication of funds immediately available to the customer,
  * fund with all booked transactions (this excludes pending transactions), or both.
  */
-enum class CurrentBalance(val raw: Int) {
+enum class ApiCurrentBalance(val raw: Int) {
   /** Only the available balance is present. */
   AVAILABLE(0),
   /** Both available and booked balances are present. */
@@ -178,7 +178,7 @@ enum class CurrentBalance(val raw: Int) {
   BOOKED(2);
 
   companion object {
-    fun ofRaw(raw: Int): CurrentBalance? {
+    fun ofRaw(raw: Int): ApiCurrentBalance? {
       return values().firstOrNull { it.raw == raw }
     }
   }
@@ -307,7 +307,7 @@ data class ApiTransaction (
   /** The account ID the transaction belongs to. */
   val accountID: String,
   /** An indicator that describes if the transaction is a credit or a debit. */
-  val creditDebitIndicator: CreditDebitIndicator,
+  val creditDebitIndicator: ApiCreditDebitIndicator,
   /** The total amount of the transaction, if it was carried out in a foreign currency. */
   val foreignCurrencyAmount: ApiCurrencyAmount? = null,
   /** The currency exchange rate, if the transaction was carried out in a foreign currency. */
@@ -337,7 +337,7 @@ data class ApiTransaction (
     fun fromList(list: List<Any?>): ApiTransaction {
       val id = list[0] as String
       val accountID = list[1] as String
-      val creditDebitIndicator = CreditDebitIndicator.ofRaw(list[2] as Int)!!
+      val creditDebitIndicator = ApiCreditDebitIndicator.ofRaw(list[2] as Int)!!
       val foreignCurrencyAmount: ApiCurrencyAmount? = (list[3] as List<Any?>?)?.let {
         ApiCurrencyAmount.fromList(it)
       }
@@ -380,7 +380,7 @@ data class ApiTransaction (
  *
  * Generated class from Pigeon that represents data sent in messages.
  */
-data class AccountCreditInformation (
+data class ApiAccountCreditInformation (
   /** The credit limit of the account. */
   val creditLimit: ApiCurrencyAmount? = null,
   /** Minimum amount of the next non-overdue payment. */
@@ -393,7 +393,7 @@ data class AccountCreditInformation (
 ) {
   companion object {
     @Suppress("UNCHECKED_CAST")
-    fun fromList(list: List<Any?>): AccountCreditInformation {
+    fun fromList(list: List<Any?>): ApiAccountCreditInformation {
       val creditLimit: ApiCurrencyAmount? = (list[0] as List<Any?>?)?.let {
         ApiCurrencyAmount.fromList(it)
       }
@@ -404,7 +404,7 @@ data class AccountCreditInformation (
       val overduePaymentAmount: ApiCurrencyAmount? = (list[3] as List<Any?>?)?.let {
         ApiCurrencyAmount.fromList(it)
       }
-      return AccountCreditInformation(creditLimit, minimumNextPaymentAmount, nextPaymentDueDate, overduePaymentAmount)
+      return ApiAccountCreditInformation(creditLimit, minimumNextPaymentAmount, nextPaymentDueDate, overduePaymentAmount)
     }
   }
   fun toList(): List<Any?> {
@@ -422,22 +422,22 @@ data class AccountCreditInformation (
  *
  * Generated class from Pigeon that represents data sent in messages.
  */
-data class Balance (
+data class ApiBalance (
   /** The amount of the balance. */
   val amount: ApiCurrencyAmount,
   /** The date and time the system calculated the balance. */
   val asOfDate: Long,
   /** A value that indicates whether the balance is a credit or a debit balance. */
-  val creditDebitIndicator: CreditDebitIndicator
+  val creditDebitIndicator: ApiCreditDebitIndicator
 
 ) {
   companion object {
     @Suppress("UNCHECKED_CAST")
-    fun fromList(list: List<Any?>): Balance {
+    fun fromList(list: List<Any?>): ApiBalance {
       val amount = ApiCurrencyAmount.fromList(list[0] as List<Any?>)
       val asOfDate = list[1].let { if (it is Int) it.toLong() else it as Long }
-      val creditDebitIndicator = CreditDebitIndicator.ofRaw(list[2] as Int)!!
-      return Balance(amount, asOfDate, creditDebitIndicator)
+      val creditDebitIndicator = ApiCreditDebitIndicator.ofRaw(list[2] as Int)!!
+      return ApiBalance(amount, asOfDate, creditDebitIndicator)
     }
   }
   fun toList(): List<Any?> {
@@ -454,35 +454,35 @@ data class Balance (
  *
  * Generated class from Pigeon that represents data sent in messages.
  */
-data class AccountBalance (
+data class ApiAccountBalance (
   /** The account ID the balance belongs to. */
   val accountID: String,
   /** The available balance, if present. */
-  val available: Balance? = null,
+  val available: ApiBalance? = null,
   /** The booked balance, if present. */
-  val booked: Balance? = null,
+  val booked: ApiBalance? = null,
   /** The balance currency. */
   val currencyCode: String,
   /** The balance at a particular moment in time. */
-  val currentBalance: CurrentBalance,
+  val currentBalance: ApiCurrentBalance,
   /** A unique account balance ID. */
   val id: String
 
 ) {
   companion object {
     @Suppress("UNCHECKED_CAST")
-    fun fromList(list: List<Any?>): AccountBalance {
+    fun fromList(list: List<Any?>): ApiAccountBalance {
       val accountID = list[0] as String
-      val available: Balance? = (list[1] as List<Any?>?)?.let {
-        Balance.fromList(it)
+      val available: ApiBalance? = (list[1] as List<Any?>?)?.let {
+        ApiBalance.fromList(it)
       }
-      val booked: Balance? = (list[2] as List<Any?>?)?.let {
-        Balance.fromList(it)
+      val booked: ApiBalance? = (list[2] as List<Any?>?)?.let {
+        ApiBalance.fromList(it)
       }
       val currencyCode = list[3] as String
-      val currentBalance = CurrentBalance.ofRaw(list[4] as Int)!!
+      val currentBalance = ApiCurrentBalance.ofRaw(list[4] as Int)!!
       val id = list[5] as String
-      return AccountBalance(accountID, available, booked, currencyCode, currentBalance, id)
+      return ApiAccountBalance(accountID, available, booked, currencyCode, currentBalance, id)
     }
   }
   fun toList(): List<Any?> {
@@ -503,11 +503,11 @@ data class AccountBalance (
  *
  * Generated class from Pigeon that represents data sent in messages.
  */
-data class LiabilityAccount (
+data class ApiLiabilityAccount (
   /** A description of the account. */
   val accountDescription: String? = null,
   /** Information regarding credits to the account. */
-  val creditInformation: AccountCreditInformation,
+  val creditInformation: ApiAccountCreditInformation,
   /** An ISO 4217 currency code that identifies the currency in which the account is held. */
   val currencyCode: String,
   /** The name for the account given by an individual. */
@@ -522,15 +522,15 @@ data class LiabilityAccount (
 ) {
   companion object {
     @Suppress("UNCHECKED_CAST")
-    fun fromList(list: List<Any?>): LiabilityAccount {
+    fun fromList(list: List<Any?>): ApiLiabilityAccount {
       val accountDescription = list[0] as String?
-      val creditInformation = AccountCreditInformation.fromList(list[1] as List<Any?>)
+      val creditInformation = ApiAccountCreditInformation.fromList(list[1] as List<Any?>)
       val currencyCode = list[2] as String
       val displayName = list[3] as String
       val id = list[4] as String
       val institutionName = list[5] as String
       val openingDate = list[6].let { if (it is Int) it.toLong() else it as Long? }
-      return LiabilityAccount(accountDescription, creditInformation, currencyCode, displayName, id, institutionName, openingDate)
+      return ApiLiabilityAccount(accountDescription, creditInformation, currencyCode, displayName, id, institutionName, openingDate)
     }
   }
   fun toList(): List<Any?> {
@@ -552,7 +552,7 @@ data class LiabilityAccount (
  *
  * Generated class from Pigeon that represents data sent in messages.
  */
-data class AssetAccount (
+data class ApiAssetAccount (
   /** The description of the account. */
   val accountDescription: String? = null,
   /** ISO 4217 currency code that identifies the currency in which the account is held. */
@@ -569,14 +569,14 @@ data class AssetAccount (
 ) {
   companion object {
     @Suppress("UNCHECKED_CAST")
-    fun fromList(list: List<Any?>): AssetAccount {
+    fun fromList(list: List<Any?>): ApiAssetAccount {
       val accountDescription = list[0] as String?
       val currencyCode = list[1] as String
       val displayName = list[2] as String
       val id = list[3] as String
       val institutionName = list[4] as String
       val openingDate = list[5].let { if (it is Int) it.toLong() else it as Long? }
-      return AssetAccount(accountDescription, currencyCode, displayName, id, institutionName, openingDate)
+      return ApiAssetAccount(accountDescription, currencyCode, displayName, id, institutionName, openingDate)
     }
   }
   fun toList(): List<Any?> {
@@ -598,7 +598,7 @@ data class AssetAccount (
  * Generated class from Pigeon that represents data sent in messages.
  */
 data class ApiAccount (
-  val type: AccountType,
+  val type: ApiAccountType,
   /** A person’s description of this account. */
   val accountDescription: String? = null,
   /** The ISO 4217 currency code that identifies the currency that denominates the account. */
@@ -612,26 +612,26 @@ data class ApiAccount (
   /** The date the account was opened, if known. */
   val openingDate: Long? = null,
   /** A liability account. */
-  val liabilityAccount: LiabilityAccount? = null,
+  val liabilityAccount: ApiLiabilityAccount? = null,
   /** An asset account. */
-  val assetAccount: AssetAccount? = null
+  val assetAccount: ApiAssetAccount? = null
 
 ) {
   companion object {
     @Suppress("UNCHECKED_CAST")
     fun fromList(list: List<Any?>): ApiAccount {
-      val type = AccountType.ofRaw(list[0] as Int)!!
+      val type = ApiAccountType.ofRaw(list[0] as Int)!!
       val accountDescription = list[1] as String?
       val currencyCode = list[2] as String
       val displayName = list[3] as String
       val id = list[4] as String
       val institutionName = list[5] as String
       val openingDate = list[6].let { if (it is Int) it.toLong() else it as Long? }
-      val liabilityAccount: LiabilityAccount? = (list[7] as List<Any?>?)?.let {
-        LiabilityAccount.fromList(it)
+      val liabilityAccount: ApiLiabilityAccount? = (list[7] as List<Any?>?)?.let {
+        ApiLiabilityAccount.fromList(it)
       }
-      val assetAccount: AssetAccount? = (list[8] as List<Any?>?)?.let {
-        AssetAccount.fromList(it)
+      val assetAccount: ApiAssetAccount? = (list[8] as List<Any?>?)?.let {
+        ApiAssetAccount.fromList(it)
       }
       return ApiAccount(type, accountDescription, currencyCode, displayName, id, institutionName, openingDate, liabilityAccount, assetAccount)
     }
@@ -651,68 +651,135 @@ data class ApiAccount (
   }
 }
 
+/** Generated class from Pigeon that represents data sent in messages. */
+data class ApiHistoryToken (
+
+) {
+  companion object {
+    @Suppress("UNCHECKED_CAST")
+    fun fromList(list: List<Any?>): ApiHistoryToken {
+      return ApiHistoryToken()
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+    )
+  }
+}
+
+/**
+ * A structure that records changes to the finance store.
+ *
+ * Generated class from Pigeon that represents data sent in messages.
+ */
+data class ApiChanges (
+  /** An array of model objects identifiers that the framework deleted from the finance store. */
+  val deleted: List<String?>,
+  /** An array of model objects the framework inserted into the finance store. */
+  val inserted: List<dynamic?>,
+  /** An updated history token. */
+  val newToken: ApiHistoryToken,
+  /** An array of model objects that the framework updated in the finance store. */
+  val updated: List<dynamic?>
+
+) {
+  companion object {
+    @Suppress("UNCHECKED_CAST")
+    fun fromList(list: List<Any?>): ApiChanges {
+      val deleted = list[0] as List<String?>
+      val inserted = list[1] as List<dynamic?>
+      val newToken = ApiHistoryToken.fromList(list[2] as List<Any?>)
+      val updated = list[3] as List<dynamic?>
+      return ApiChanges(deleted, inserted, newToken, updated)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      deleted,
+      inserted,
+      newToken.toList(),
+      updated,
+    )
+  }
+}
+
 @Suppress("UNCHECKED_CAST")
 private object FinanceKitApiCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
       128.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          AccountBalance.fromList(it)
+          ApiAccount.fromList(it)
         }
       }
       129.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          AccountCreditInformation.fromList(it)
+          ApiAccountBalance.fromList(it)
         }
       }
       130.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          ApiAccount.fromList(it)
+          ApiAccountCreditInformation.fromList(it)
         }
       }
       131.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          ApiCurrencyAmount.fromList(it)
+          ApiAssetAccount.fromList(it)
         }
       }
       132.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          ApiCurrencyAmount.fromList(it)
+          ApiBalance.fromList(it)
         }
       }
       133.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          ApiPredicate.fromList(it)
+          ApiChanges.fromList(it)
         }
       }
       134.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          ApiQueryParams.fromList(it)
+          ApiCurrencyAmount.fromList(it)
         }
       }
       135.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          ApiSortDescriptor.fromList(it)
+          ApiCurrencyAmount.fromList(it)
         }
       }
       136.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          ApiTransaction.fromList(it)
+          ApiHistoryToken.fromList(it)
         }
       }
       137.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          AssetAccount.fromList(it)
+          ApiLiabilityAccount.fromList(it)
         }
       }
       138.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          Balance.fromList(it)
+          ApiPredicate.fromList(it)
         }
       }
       139.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          LiabilityAccount.fromList(it)
+          ApiQueryParams.fromList(it)
+        }
+      }
+      140.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          ApiSortDescriptor.fromList(it)
+        }
+      }
+      141.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          ApiTransaction.fromList(it)
+        }
+      }
+      142.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          dynamic.fromList(it)
         }
       }
       else -> super.readValueOfType(type, buffer)
@@ -720,52 +787,64 @@ private object FinanceKitApiCodec : StandardMessageCodec() {
   }
   override fun writeValue(stream: ByteArrayOutputStream, value: Any?)   {
     when (value) {
-      is AccountBalance -> {
+      is ApiAccount -> {
         stream.write(128)
         writeValue(stream, value.toList())
       }
-      is AccountCreditInformation -> {
+      is ApiAccountBalance -> {
         stream.write(129)
         writeValue(stream, value.toList())
       }
-      is ApiAccount -> {
+      is ApiAccountCreditInformation -> {
         stream.write(130)
         writeValue(stream, value.toList())
       }
-      is ApiCurrencyAmount -> {
+      is ApiAssetAccount -> {
         stream.write(131)
         writeValue(stream, value.toList())
       }
-      is ApiCurrencyAmount -> {
+      is ApiBalance -> {
         stream.write(132)
         writeValue(stream, value.toList())
       }
-      is ApiPredicate -> {
+      is ApiChanges -> {
         stream.write(133)
         writeValue(stream, value.toList())
       }
-      is ApiQueryParams -> {
+      is ApiCurrencyAmount -> {
         stream.write(134)
         writeValue(stream, value.toList())
       }
-      is ApiSortDescriptor -> {
+      is ApiCurrencyAmount -> {
         stream.write(135)
         writeValue(stream, value.toList())
       }
-      is ApiTransaction -> {
+      is ApiHistoryToken -> {
         stream.write(136)
         writeValue(stream, value.toList())
       }
-      is AssetAccount -> {
+      is ApiLiabilityAccount -> {
         stream.write(137)
         writeValue(stream, value.toList())
       }
-      is Balance -> {
+      is ApiPredicate -> {
         stream.write(138)
         writeValue(stream, value.toList())
       }
-      is LiabilityAccount -> {
+      is ApiQueryParams -> {
         stream.write(139)
+        writeValue(stream, value.toList())
+      }
+      is ApiSortDescriptor -> {
+        stream.write(140)
+        writeValue(stream, value.toList())
+      }
+      is ApiTransaction -> {
+        stream.write(141)
+        writeValue(stream, value.toList())
+      }
+      is dynamic -> {
+        stream.write(142)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -779,8 +858,9 @@ interface FinanceKitApi {
   fun authorizationStatus(callback: (Result<ApiAuthorizationStatus>) -> Unit)
   fun requestAuthorization(callback: (Result<ApiAuthorizationStatus>) -> Unit)
   fun accounts(query: ApiQueryParams, callback: (Result<List<ApiAccount>>) -> Unit)
-  fun accountBalances(query: ApiQueryParams, callback: (Result<List<AccountBalance>>) -> Unit)
+  fun accountBalances(query: ApiQueryParams, callback: (Result<List<ApiAccountBalance>>) -> Unit)
   fun transactions(query: ApiQueryParams, callback: (Result<List<ApiTransaction>>) -> Unit)
+  fun test(): List<ApiChanges>
 
   companion object {
     /** The codec used by FinanceKitApi. */
@@ -870,7 +950,7 @@ interface FinanceKitApi {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
             val queryArg = args[0] as ApiQueryParams
-            api.accountBalances(queryArg) { result: Result<List<AccountBalance>> ->
+            api.accountBalances(queryArg) { result: Result<List<ApiAccountBalance>> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(wrapError(error))
@@ -899,6 +979,22 @@ interface FinanceKitApi {
                 reply.reply(wrapResult(data))
               }
             }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.flutter_financekit.FinanceKitApi.test", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            var wrapped: List<Any?>
+            try {
+              wrapped = listOf<Any?>(api.test())
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)

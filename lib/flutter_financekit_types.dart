@@ -1,15 +1,18 @@
 import 'package:decimal/decimal.dart';
+import 'package:flutter_financekit/src/extensions.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_financekit/src/messages.g.dart';
 
 NumberFormat numberFormat = NumberFormat();
 
-typedef Account = ApiAccount;
 typedef TransactionStatus = ApiTransactionStatus;
 typedef TransactionType = ApiTransactionType;
 typedef AuthorizationStatus = ApiAuthorizationStatus;
 typedef DataType = ApiDataType;
+typedef CreditDebitIndicator = ApiCreditDebitIndicator;
+typedef AccountType = ApiAccountType;
+typedef CurrentBalance = ApiCurrentBalance;
 
 typedef SortDescriptor<T> = bool Function(T a, T b);
 typedef Predicate<T> = bool Function(T t);
@@ -38,6 +41,185 @@ class History<T> {}
 class HistoryToken {}
 
 typedef MerchantCategoryCode = int;
+
+/// A structure that describes an account balance.
+class Balance {
+  /// The amount of the balance.
+  CurrencyAmount amount;
+
+  /// The date and time the system calculated the balance.
+  DateTime asOfDate;
+
+  /// A value that indicates whether the balance is a credit or a debit balance.
+  CreditDebitIndicator creditDebitIndicator;
+
+  Balance({
+    required this.amount,
+    required this.asOfDate,
+    required this.creditDebitIndicator,
+  });
+}
+
+/// A structure that describes the financial balance of an account at a specific point in time.
+class AccountBalance {
+  /// The account ID the balance belongs to.
+  ID accountID;
+
+  /// The available balance, if present.
+  Balance? available;
+
+  /// The booked balance, if present.
+  Balance? booked;
+
+  /// The balance currency.
+  String currencyCode;
+
+  /// The balance at a particular moment in time.
+  CurrentBalance currentBalance;
+
+  /// A unique account balance ID.
+  ID id;
+
+  AccountBalance({
+    required this.accountID,
+    this.available,
+    this.booked,
+    required this.currencyCode,
+    required this.currentBalance,
+    required this.id,
+  });
+}
+
+/// A structure that describes the credit information associated with an account.
+/// Credit information includes credit limits, payment dates, and minimum payment dates and amounts for current and upcoming payments.
+class AccountCreditInformation {
+  /// The credit limit of the account.
+  CurrencyAmount? creditLimit;
+
+  /// Minimum amount of the next non-overdue payment.
+  CurrencyAmount? minimumNextPaymentAmount;
+
+  /// Date of the next payment.
+  DateTime? nextPaymentDueDate;
+
+  /// The amount by which the account is overdue for the current period.
+  CurrencyAmount? overduePaymentAmount;
+
+  AccountCreditInformation({
+    this.creditLimit,
+    this.minimumNextPaymentAmount,
+    this.nextPaymentDueDate,
+    this.overduePaymentAmount,
+  });
+}
+
+/// A structure that describes the characteristics of a liability account.
+/// A liability account includes accounts such as credit cards.
+class LiabilityAccount {
+  /// A description of the account.
+  String? accountDescription;
+
+  /// Information regarding credits to the account.
+  AccountCreditInformation creditInformation;
+
+  /// An ISO 4217 currency code that identifies the currency in which the account is held.
+  String currencyCode;
+
+  /// The name for the account given by an individual.
+  String displayName;
+
+  /// A unique account ID.
+  ID id;
+
+  /// The name of the institution that holds the account.
+  String institutionName;
+
+  /// The date the account was opened, if known.
+  DateTime? openingDate;
+
+  LiabilityAccount({
+    this.accountDescription,
+    required this.creditInformation,
+    required this.currencyCode,
+    required this.displayName,
+    required this.id,
+    required this.institutionName,
+    this.openingDate,
+  });
+}
+
+/// A structure that describes the characteristics of an asset account.
+/// An asset account includes accounts such as a bank account or a savings account.
+class AssetAccount {
+  /// The description of the account.
+  String? accountDescription;
+
+  /// ISO 4217 currency code that identifies the currency in which the account is held.
+  String currencyCode;
+
+  /// The name for the account given by a person.
+  String displayName;
+
+  /// A unique account identifier.
+  ID id;
+
+  /// The name of the institution that holds the account.
+  String institutionName;
+
+  /// The date the account was opened, if known.
+  DateTime? openingDate;
+
+  AssetAccount({
+    this.accountDescription,
+    required this.currencyCode,
+    required this.displayName,
+    required this.id,
+    required this.institutionName,
+    this.openingDate,
+  });
+}
+
+/// A structure that describes a financial account.
+/// Accounts can include a variety of financial account types such as a bank account, a credit card, or a college fund.
+class Account {
+  AccountType type;
+
+  /// A person’s description of this account.
+  String? accountDescription;
+
+  /// The ISO 4217 currency code that identifies the currency that denominates the account.
+  String currencyCode;
+
+  /// The name for this account that a person provided.
+  String displayName;
+
+  /// The unique account ID for this account.
+  ID id;
+
+  /// The name of the institution that holds this account.
+  String institutionName;
+
+  /// The date the account was opened, if known.
+  DateTime? openingDate;
+
+  /// A liability account.
+  LiabilityAccount? liabilityAccount;
+
+  /// An asset account.
+  AssetAccount? assetAccount;
+
+  Account({
+    this.accountDescription,
+    required this.currencyCode,
+    required this.displayName,
+    required this.id,
+    required this.institutionName,
+    this.openingDate,
+    required this.type,
+    this.liabilityAccount,
+    this.assetAccount,
+  });
+}
 
 /// A structure that represents a transaction relating to a specific financial account.
 /// This can include transactions such as a deposit to or a withdrawn from bank account, a credit card transaction.
@@ -113,6 +295,10 @@ class CurrencyAmount {
   CurrencyAmount(this.amount, this.currencyCode);
 
   String get currencySymbol => numberFormat.simpleCurrencySymbol(currencyCode);
+
+  String format() {
+    return "$currencySymbol${amount.toStringAsFixed(2)}";
+  }
 }
 
 /// A structure that records changes to the finance store.

@@ -22,6 +22,23 @@ extension FinanceKit.AuthorizationStatus {
     }
 }
 
+
+@available(iOS 17.4, *)
+extension FinanceKit.CreditDebitIndicator {
+    var toApi: ApiCreditDebitIndicator {
+        get throws {
+            switch self {
+            case .credit:
+                return .credit
+            case .debit:
+                return .debit
+            @unknown default:
+                fatalError()
+            }
+        }
+    }
+}
+
 @available(iOS 17.4, *)
 extension FinanceKit.Account {
     var toApi: ApiAccount {
@@ -32,32 +49,126 @@ extension FinanceKit.Account {
     }
 }
 
+@available(iOS 17.4, *)
+extension FinanceKit.CurrentBalance {
+    var toApi: ApiCurrentBalance {
+        get throws {
+            switch self {
+            case .available:
+                return .available
+            case .booked:
+                return .booked
+            case .availableAndBooked:
+                return .availableAndBooked
+            @unknown default:
+                fatalError()
+            }
+        }
+    }
+}
 
 @available(iOS 17.4, *)
-extension FinanceKit.AccountBalance {
-    var toApi: AccountBalance {
-        get {
-            return AccountBalance(accountID: id.uuidString, currencyCode: currencyCode, currentBalance: currentBalance, id: id.uuidString)
+extension FinanceKit.TransactionStatus {
+    var toApi: ApiTransactionStatus {
+        get throws {
+            switch self {
+            case .authorized:
+                return .authorized
+            case .booked:
+                return .booked
+            case .memo:
+                return .memo
+            case .pending:
+                return .pending
+            case .rejected:
+                return .rejected
+            @unknown default:
+                fatalError()
+            }
+        }
+    }
+}
+
+@available(iOS 17.4, *)
+extension FinanceKit.TransactionType {
+    var toApi: ApiTransactionType {
+        get throws {
+            switch self {
+            case .adjustment:
+                return .adjustment
+            case .atm:
+                return .atm
+            case .billPayment:
+                return .billPayment
+            case .check:
+                return .check
+            case .deposit:
+                return .deposit
+            case .directDebit:
+                return .directDebit
+            case .directDeposit:
+                return .directDeposit
+            case .dividend:
+                return .dividend
+            case .fee:
+                return .fee
+            case .interest:
+                return .interest
+            case .loan:
+                return .loan
+            case .pointOfSale:
+                return .pointOfSale
+            case .refund:
+                return .refund
+            case .standingOrder:
+                return .standingOrder
+            case .transfer:
+                return .transfer
+            case .unknown:
+                return .unknown
+            case .withdrawal:
+                return .withdrawal
+            @unknown default:
+                fatalError()
+            }
         }
     }
 }
 
 
 @available(iOS 17.4, *)
-extension FinanceKit.CurrentBalance {
-    var toApi: CurrentBalance {
+extension FinanceKit.AccountBalance {
+    var toApi: ApiAccountBalance {
         get throws {
-            switch self {
-            case .available:
-                return .available
-            case .availableAndBooked:
-                return .availableAndBooked
-            case .booked:
-                return .booked
-            @unknown default:
-                fatalError()
-            }
+            return try ApiAccountBalance(accountID: id.uuidString, currencyCode: currencyCode, currentBalance: currentBalance.toApi, id: id.uuidString)
+        }
+    }
+}
 
+
+@available(iOS 17.4, *)
+extension FinanceKit.CurrencyAmount {
+    var toApi: ApiCurrencyAmount {
+        get {
+            return ApiCurrencyAmount(amount: NSDecimalNumber(decimal: amount).stringValue, currencyCode: currencyCode)
+        }
+    }
+}
+
+
+@available(iOS 17.4, *)
+extension FinanceKit.Transaction {
+    var toApi: ApiTransaction {
+        get throws {
+            return try ApiTransaction(id: id.uuidString,
+                    accountID: accountID.uuidString,
+                    creditDebitIndicator: creditDebitIndicator.toApi,
+                    originalTransactionDescription: originalTransactionDescription,
+                    status: status.toApi,
+                    transactionAmount: transactionAmount.toApi,
+                    transactionDate: Int64(transactionDate.timeIntervalSince1970 * 100),
+                    transactionDescription: transactionDescription,
+                    transactionType: transactionType.toApi)
         }
     }
 }
@@ -77,17 +188,17 @@ extension FinanceStore.DataType {
 
 public class SwiftFlutterFinanceKitPlugin: NSObject, FlutterPlugin, FinanceKitApi {
     private let store = FinanceStore.shared
-
+    
     public static func register(with registrar: FlutterPluginRegistrar) {
         let messenger: FlutterBinaryMessenger = registrar.messenger()
         let api: FinanceKitApi & NSObjectProtocol = SwiftFlutterFinanceKitPlugin.init()
         FinanceKitApiSetup.setUp(binaryMessenger: messenger, api: api);
     }
-
+    
     func isDataAvailable(type: ApiDataType) throws -> Bool {
         return FinanceStore.isDataAvailable(FinanceStore.DataType.fromApi(type: type))
     }
-
+    
     func authorizationStatus(completion: @escaping (Result<ApiAuthorizationStatus, any Error>) -> Void) {
         Task {
             do {
@@ -98,7 +209,7 @@ public class SwiftFlutterFinanceKitPlugin: NSObject, FlutterPlugin, FinanceKitAp
             }
         }
     }
-
+    
     func requestAuthorization(completion: @escaping (Result<ApiAuthorizationStatus, any Error>) -> Void) {
         Task {
             do {
@@ -109,8 +220,8 @@ public class SwiftFlutterFinanceKitPlugin: NSObject, FlutterPlugin, FinanceKitAp
             }
         }
     }
-
-
+    
+    
     func accounts(query: ApiQueryParams, completion: @escaping (Result<[ApiAccount], any Error>) -> Void) {
         Task {
             do {
@@ -123,24 +234,34 @@ public class SwiftFlutterFinanceKitPlugin: NSObject, FlutterPlugin, FinanceKitAp
             }
         }
     }
-
-    func accountBalances(query: ApiQueryParams, completion: @escaping (Result<[AccountBalance], any Error>) -> Void) {
+    
+    func accountBalances(query: ApiQueryParams, completion: @escaping (Result<[ApiAccountBalance], any Error>) -> Void) {
         Task {
             do {
                 let accounts = try await self.store.accountBalances(query: AccountBalanceQuery())
-                completion(.success(accounts.map({ a in
-                    a.toApi
+                try completion(.success(accounts.map({ a in
+                    try a.toApi
                 })))
             } catch let error {
                 fatalError()
             }
         }
     }
-
+    
     func transactions(query: ApiQueryParams, completion: @escaping (Result<[ApiTransaction], any Error>) -> Void) {
-        <#code#>
+        Task {
+            do {
+                let transactions = try await self.store.transactions(query: TransactionQuery())
+                try completion(.success(transactions.map({ t in
+                    try t.toApi
+                })))
+            } catch let error {
+                fatalError()
+                
+            }
+            
+            
+            //    @available(iOS 17.4, *)
+        }
     }
-
-
-//    @available(iOS 17.4, *)
 }

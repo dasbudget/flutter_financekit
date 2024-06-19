@@ -1,6 +1,4 @@
 import 'package:flutter_financekit/flutter_financekit_types.dart';
-import 'package:flutter_financekit/src/messages.g.dart';
-import 'package:uuid/uuid.dart';
 import 'flutter_financekit_platform_interface.dart';
 
 /// Access financial data and interact with Apple Card, Apple Cash, and orders in Wallet.
@@ -91,7 +89,7 @@ class FinanceKit {
 
   /// Returns the account balance history since a time specified by the provided financial history token.
   static Future<Stream<Changes<AccountBalance>>> accountBalanceHistory(
-    Uuid accountID, {
+    ID accountID, {
     HistoryToken? since,
     bool isMonitoring = true,
   }) {
@@ -114,7 +112,7 @@ class FinanceKit {
   /// transactions into the finance store. You can, optionally, specify a
   /// starting date and time by providing a historyToken.
   static Future<Stream<Changes<Transaction>>> transactionHistory(
-    Uuid accountID, {
+    ID accountID, {
     HistoryToken? since,
     bool isMonitoring = true,
   }) {

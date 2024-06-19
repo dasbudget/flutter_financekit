@@ -1,7 +1,5 @@
 import 'package:flutter_financekit/flutter_financekit_types.dart';
-import 'package:flutter_financekit/src/messages.g.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
-import 'package:uuid/uuid.dart';
 
 import 'flutter_financekit_method_channel.dart';
 
@@ -58,7 +56,7 @@ abstract class FlutterFinanceKitPlatform extends PlatformInterface {
   }
 
   Future<Stream<Changes<AccountBalance>>> accountBalanceHistory(
-    Uuid accountID, {
+    ID accountID, {
     HistoryToken? since,
     bool isMonitoring = true,
   }) {
@@ -70,7 +68,7 @@ abstract class FlutterFinanceKitPlatform extends PlatformInterface {
   }
 
   Future<Stream<Changes<Transaction>>> transactionHistory(
-    Uuid accountID, {
+    ID accountID, {
     HistoryToken? since,
     bool isMonitoring = true,
   }) {

@@ -146,7 +146,7 @@ enum ApiTransactionStatus {
 }
 
 /// Values that the framework uses to describe transactions as credits or debits.
-enum CreditDebitIndicator {
+enum ApiCreditDebitIndicator {
   /// A value that indicates an amount which increases an asset or decreases a liability.
   credit,
 
@@ -177,7 +177,7 @@ class ApiTransaction {
   String accountID;
 
   /// An indicator that describes if the transaction is a credit or a debit.
-  CreditDebitIndicator creditDebitIndicator;
+  ApiCreditDebitIndicator creditDebitIndicator;
 
   /// The total amount of the transaction, if it was carried out in a foreign currency.
   ApiCurrencyAmount? foreignCurrencyAmount;
@@ -230,7 +230,7 @@ class ApiTransaction {
   });
 }
 
-enum AccountType {
+enum ApiAccountType {
   /// An asset account.
   asset,
 
@@ -240,7 +240,7 @@ enum AccountType {
 
 /// A structure that describes the credit information associated with an account.
 /// Credit information includes credit limits, payment dates, and minimum payment dates and amounts for current and upcoming payments.
-class AccountCreditInformation {
+class ApiAccountCreditInformation {
   /// The credit limit of the account.
   ApiCurrencyAmount? creditLimit;
 
@@ -253,7 +253,7 @@ class AccountCreditInformation {
   /// The amount by which the account is overdue for the current period.
   ApiCurrencyAmount? overduePaymentAmount;
 
-  AccountCreditInformation({
+  ApiAccountCreditInformation({
     this.creditLimit,
     this.minimumNextPaymentAmount,
     this.nextPaymentDueDate,
@@ -265,7 +265,7 @@ class AccountCreditInformation {
 ///
 /// It can contain an indication of funds immediately available to the customer,
 /// fund with all booked transactions (this excludes pending transactions), or both.
-enum CurrentBalance {
+enum ApiCurrentBalance {
   /// Only the available balance is present.
   available,
 
@@ -277,7 +277,7 @@ enum CurrentBalance {
 }
 
 /// A structure that describes an account balance.
-class Balance {
+class ApiBalance {
   /// The amount of the balance.
   ApiCurrencyAmount amount;
 
@@ -285,9 +285,9 @@ class Balance {
   int asOfDate;
 
   /// A value that indicates whether the balance is a credit or a debit balance.
-  CreditDebitIndicator creditDebitIndicator;
+  ApiCreditDebitIndicator creditDebitIndicator;
 
-  Balance({
+  ApiBalance({
     required this.amount,
     required this.asOfDate,
     required this.creditDebitIndicator,
@@ -295,26 +295,26 @@ class Balance {
 }
 
 /// A structure that describes the financial balance of an account at a specific point in time.
-class AccountBalance {
+class ApiAccountBalance {
   /// The account ID the balance belongs to.
   String accountID;
 
   /// The available balance, if present.
-  Balance? available;
+  ApiBalance? available;
 
   /// The booked balance, if present.
-  Balance? booked;
+  ApiBalance? booked;
 
   /// The balance currency.
   String currencyCode;
 
   /// The balance at a particular moment in time.
-  CurrentBalance currentBalance;
+  ApiCurrentBalance currentBalance;
 
   /// A unique account balance ID.
   String id;
 
-  AccountBalance({
+  ApiAccountBalance({
     required this.accountID,
     this.available,
     this.booked,
@@ -326,12 +326,12 @@ class AccountBalance {
 
 /// A structure that describes the characteristics of a liability account.
 /// A liability account includes accounts such as credit cards.
-class LiabilityAccount {
+class ApiLiabilityAccount {
   /// A description of the account.
   String? accountDescription;
 
   /// Information regarding credits to the account.
-  AccountCreditInformation creditInformation;
+  ApiAccountCreditInformation creditInformation;
 
   /// An ISO 4217 currency code that identifies the currency in which the account is held.
   String currencyCode;
@@ -348,7 +348,7 @@ class LiabilityAccount {
   /// The date the account was opened, if known.
   int? openingDate;
 
-  LiabilityAccount({
+  ApiLiabilityAccount({
     this.accountDescription,
     required this.creditInformation,
     required this.currencyCode,
@@ -361,7 +361,7 @@ class LiabilityAccount {
 
 /// A structure that describes the characteristics of an asset account.
 /// An asset account includes accounts such as a bank account or a savings account.
-class AssetAccount {
+class ApiAssetAccount {
   /// The description of the account.
   String? accountDescription;
 
@@ -380,7 +380,7 @@ class AssetAccount {
   /// The date the account was opened, if known.
   int? openingDate;
 
-  AssetAccount({
+  ApiAssetAccount({
     this.accountDescription,
     required this.currencyCode,
     required this.displayName,
@@ -393,7 +393,7 @@ class AssetAccount {
 /// A structure that describes a financial account.
 /// Accounts can include a variety of financial account types such as a bank account, a credit card, or a college fund.
 class ApiAccount {
-  AccountType type;
+  ApiAccountType type;
 
   /// A person’s description of this account.
   String? accountDescription;
@@ -414,10 +414,10 @@ class ApiAccount {
   int? openingDate;
 
   /// A liability account.
-  LiabilityAccount? liabilityAccount;
+  ApiLiabilityAccount? liabilityAccount;
 
   /// An asset account.
-  AssetAccount? assetAccount;
+  ApiAssetAccount? assetAccount;
 
   ApiAccount({
     this.accountDescription,
@@ -431,6 +431,32 @@ class ApiAccount {
     this.assetAccount,
   });
 }
+
+// todo
+class ApiHistoryToken {}
+
+/// A structure that records changes to the finance store.
+class ApiChanges {
+  /// An array of model objects identifiers that the framework deleted from the finance store.
+  List<String?> deleted;
+
+  /// An array of model objects the framework inserted into the finance store.
+  List<dynamic?> inserted;
+
+  /// An updated history token.
+  ApiHistoryToken newToken;
+
+  /// An array of model objects that the framework updated in the finance store.
+  List<dynamic?> updated;
+
+  ApiChanges({
+    required this.deleted,
+    required this.inserted,
+    required this.newToken,
+    required this.updated,
+  });
+}
+
 
 @HostApi()
 abstract class FinanceKitApi {
@@ -446,10 +472,13 @@ abstract class FinanceKitApi {
   List<ApiAccount> accounts(ApiQueryParams query);
 
   @async
-  List<AccountBalance> accountBalances(ApiQueryParams query);
+  List<ApiAccountBalance> accountBalances(ApiQueryParams query);
 
   @async
   List<ApiTransaction> transactions(ApiQueryParams query);
+
+
+  List<ApiChanges> test();
 
 // History<Account> accountHistory({
 //   HistoryToken? since,
