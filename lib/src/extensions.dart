@@ -1,55 +1,13 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter_financekit/flutter_financekit_types.dart';
 import 'package:flutter_financekit/src/messages.g.dart';
-import 'package:uuid/uuid.dart';
-
-extension AccountPredicates on Account {
-  static Predicate<Account> byAccountIDs(List<String> accountIDs) {
-    return (t) => accountIDs.contains(t.id);
-  }
-
-  static Predicate<Account> byTypes(List<AccountType> types) {
-    return (t) => types.contains(t.type);
-  }
-}
 
 extension StringExts on String {
   ID get toUuid => ID.fromString(this);
-
-  static Predicate<Account> byTypes(List<AccountType> types) {
-    return (t) => types.contains(t.type);
-  }
 }
 
-extension TransactionPredicates on Transaction {
-  static Predicate<Transaction> byID(List<ID> transactionIDs) {
-    return (t) => transactionIDs.contains(t.id);
-  }
-
-  static Predicate<Transaction> byAccountID(List<ID> accountIDs) {
-    return (t) => accountIDs.contains(t.accountID);
-  }
-
-  static Predicate<Transaction> byTransactionDate(
-      {DateTime? start, DateTime? end}) {
-    return (t) {
-      if (start == null && end == null) return true;
-
-      bool startMatches = true;
-      if (start != null) {
-        startMatches &=
-            (t.transactionDate.isAfter(start) || t.transactionDate == start);
-      }
-
-      bool endMatches = true;
-      if (end != null) {
-        endMatches &=
-            (t.transactionDate.isBefore(end) || t.transactionDate == end);
-      }
-
-      return startMatches && endMatches;
-    };
-  }
+extension DecimalExts on Decimal {
+  Decimal get invert => this * Decimal.fromInt(-1);
 }
 
 extension ApiCurrencyAmountExtensions on ApiCurrencyAmount {
@@ -65,6 +23,18 @@ extension ApiAccBal on ApiAccountBalance {
       currencyCode: currencyCode,
       currentBalance: currentBalance,
       id: id.toUuid,
+      available: available?.convert(),
+      booked: booked?.convert(),
+    );
+  }
+}
+
+extension ApiBalanceExt on ApiBalance {
+  Balance convert() {
+    return Balance(
+      amount: amount.convert(),
+      asOfDate: DateTime.fromMillisecondsSinceEpoch(asOfDate),
+      creditDebitIndicator: creditDebitIndicator,
     );
   }
 }
@@ -84,8 +54,8 @@ extension ApiAcc on ApiAccount {
 extension ApiTx on ApiTransaction {
   Transaction convert() {
     return Transaction(
-      id: UuidValue.fromString(id),
-      accountID: UuidValue.fromString(accountID),
+      id: id.toUuid,
+      accountID: accountID.toUuid,
       creditDebitIndicator: creditDebitIndicator,
       originalTransactionDescription: originalTransactionDescription,
       status: status,

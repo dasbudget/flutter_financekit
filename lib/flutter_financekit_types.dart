@@ -17,6 +17,8 @@ typedef CurrentBalance = ApiCurrentBalance;
 typedef SortDescriptor<T> = bool Function(T a, T b);
 typedef Predicate<T> = bool Function(T t);
 
+final DateFormat dateFormat = DateFormat('MMMM d, y');
+
 typedef ID = UuidValue;
 
 class QueryParams<T> {
@@ -75,6 +77,9 @@ class AccountBalance {
   String currencyCode;
 
   /// The balance at a particular moment in time.
+  ///
+  /// It can contain an indication of funds immediately available to the customer,
+  /// fund with all booked transactions (this excludes pending transactions), or both.
   CurrentBalance currentBalance;
 
   /// A unique account balance ID.
@@ -88,6 +93,20 @@ class AccountBalance {
     required this.currentBalance,
     required this.id,
   });
+
+  String get formattedBalance {
+    if (available != null) {
+      return available!.amount.format();
+    } else if (booked != null) {
+      return booked!.amount.format();
+    } else {
+      return "null";
+    }
+  }
+
+  static Predicate<AccountBalance> byAccountIDs(List<ID> accountIDs) {
+    return (t) => accountIDs.contains(t.accountID);
+  }
 }
 
 /// A structure that describes the credit information associated with an account.
@@ -282,6 +301,47 @@ class Transaction {
     required this.transactionDescription,
     required this.transactionType,
   });
+
+  String get formattedDescription => merchantName ?? transactionDescription;
+  String get formattedDate => dateFormat.format(transactionDate);
+
+  get formattedAmount {
+    var amt = transactionAmount.copy();
+    if (creditDebitIndicator == ApiCreditDebitIndicator.debit) {
+      amt.amount = Decimal.fromInt(-1);
+    }
+
+    return amt.format();
+  }
+
+  static Predicate<Transaction> byID(List<ID> transactionIDs) {
+    return (t) => transactionIDs.contains(t.id);
+  }
+
+  static Predicate<Transaction> byAccountIDs(List<ID> accountIDs) {
+    return (t) => accountIDs.contains(t.accountID);
+  }
+
+  static Predicate<Transaction> byTransactionDate(
+      {DateTime? start, DateTime? end}) {
+    return (t) {
+      if (start == null && end == null) return true;
+
+      bool startMatches = true;
+      if (start != null) {
+        startMatches &=
+            (t.transactionDate.isAfter(start) || t.transactionDate == start);
+      }
+
+      bool endMatches = true;
+      if (end != null) {
+        endMatches &=
+            (t.transactionDate.isBefore(end) || t.transactionDate == end);
+      }
+
+      return startMatches && endMatches;
+    };
+  }
 }
 
 /// A structure that describes a monetary amount and its currency.
@@ -297,7 +357,18 @@ class CurrencyAmount {
   String get currencySymbol => numberFormat.simpleCurrencySymbol(currencyCode);
 
   String format() {
-    return "$currencySymbol${amount.toStringAsFixed(2)}";
+    String pre = "";
+    Decimal amt = amount * Decimal.one;
+    if (amount < Decimal.zero) {
+      pre = "-";
+      amt = amt.invert;
+    }
+
+    return "$pre$currencySymbol${amt.toStringAsFixed(2)}";
+  }
+
+  CurrencyAmount copy() {
+    return CurrencyAmount(amount*Decimal.one, currencyCode);
   }
 }
 

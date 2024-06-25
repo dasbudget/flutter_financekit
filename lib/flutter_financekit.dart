@@ -1,6 +1,8 @@
 import 'package:flutter_financekit/flutter_financekit_types.dart';
 import 'flutter_financekit_platform_interface.dart';
 
+export 'package:flutter_financekit/extensions.dart';
+
 /// Access financial data and interact with Apple Card, Apple Cash, and orders in Wallet.
 /// Use FinanceKit to access on-device financial data, Apple Cash, and interact with orders in Apple Wallet.
 ///

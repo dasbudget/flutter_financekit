@@ -1,6 +1,7 @@
 import Flutter
 import UIKit
 import FinanceKit
+import os.log
 
 
 @available(iOS 17.4, *)
@@ -17,7 +18,7 @@ extension FinanceKit.AuthorizationStatus {
             @unknown default:
                 fatalError()
             }
-
+            
         }
     }
 }
@@ -44,7 +45,7 @@ extension FinanceKit.Account {
     var toApi: ApiAccount {
         get {
             return ApiAccount(type: liabilityAccount != nil ? .liability : .asset, currencyCode:
-            currencyCode, displayName: displayName, id: id.uuidString, institutionName: institutionName)
+                                currencyCode, displayName: displayName, id: id.uuidString, institutionName: institutionName)
         }
     }
 }
@@ -140,7 +141,26 @@ extension FinanceKit.TransactionType {
 extension FinanceKit.AccountBalance {
     var toApi: ApiAccountBalance {
         get throws {
-            return try ApiAccountBalance(accountID: id.uuidString, currencyCode: currencyCode, currentBalance: currentBalance.toApi, id: id.uuidString)
+            return try ApiAccountBalance(
+                accountID: accountID.uuidString,
+                available: available?.toApi,
+                booked: booked?.toApi,
+                currencyCode: currencyCode,
+                currentBalance: currentBalance.toApi,
+                id: id.uuidString
+            )
+        }
+    }
+}
+@available(iOS 17.4, *)
+extension FinanceKit.Balance {
+    var toApi: ApiBalance {
+        get throws {
+            return try ApiBalance(
+                amount: amount.toApi,
+                asOfDate: Int64(asOfDate.timeIntervalSince1970 * 1000),
+                creditDebitIndicator: creditDebitIndicator.toApi
+            )
         }
     }
 }
@@ -160,15 +180,21 @@ extension FinanceKit.CurrencyAmount {
 extension FinanceKit.Transaction {
     var toApi: ApiTransaction {
         get throws {
-            return try ApiTransaction(id: id.uuidString,
-                    accountID: accountID.uuidString,
-                    creditDebitIndicator: creditDebitIndicator.toApi,
-                    originalTransactionDescription: originalTransactionDescription,
-                    status: status.toApi,
-                    transactionAmount: transactionAmount.toApi,
-                    transactionDate: Int64(transactionDate.timeIntervalSince1970 * 100),
-                    transactionDescription: transactionDescription,
-                    transactionType: transactionType.toApi)
+            return try ApiTransaction(
+                id: id.uuidString,
+                accountID: accountID.uuidString,
+                creditDebitIndicator: creditDebitIndicator.toApi,
+                foreignCurrencyAmount: foreignCurrencyAmount?.toApi,
+                //                foreignCurrencyExchangeRate: foreignCurrencyExchangeRate,
+                merchantCategoryCode:  (merchantCategoryCode != nil) ? Int64(merchantCategoryCode!.rawValue) : nil,
+                merchantName: merchantName,
+                originalTransactionDescription: originalTransactionDescription,
+                postedDate: (postedDate != nil ) ? Int64(postedDate!.timeIntervalSince1970 * 1000) : nil,
+                status: status.toApi,
+                transactionAmount: transactionAmount.toApi,
+                transactionDate: Int64(transactionDate.timeIntervalSince1970 * 1000),
+                transactionDescription: transactionDescription,
+                transactionType: transactionType.toApi)
         }
     }
 }
@@ -195,6 +221,10 @@ public class SwiftFlutterFinanceKitPlugin: NSObject, FlutterPlugin, FinanceKitAp
         FinanceKitApiSetup.setUp(binaryMessenger: messenger, api: api);
     }
     
+    func test() throws -> [ApiChanges] {
+        return []
+    }
+    
     func isDataAvailable(type: ApiDataType) throws -> Bool {
         return FinanceStore.isDataAvailable(FinanceStore.DataType.fromApi(type: type))
     }
@@ -216,6 +246,7 @@ public class SwiftFlutterFinanceKitPlugin: NSObject, FlutterPlugin, FinanceKitAp
                 let status = try await store.requestAuthorization()
                 completion(.success(try status.toApi))
             } catch let error {
+                os_log("Error: %@", log: .default, type: .error, String(describing: error))
                 fatalError()
             }
         }
@@ -257,11 +288,7 @@ public class SwiftFlutterFinanceKitPlugin: NSObject, FlutterPlugin, FinanceKitAp
                 })))
             } catch let error {
                 fatalError()
-                
             }
-            
-            
-            //    @available(iOS 17.4, *)
         }
     }
 }

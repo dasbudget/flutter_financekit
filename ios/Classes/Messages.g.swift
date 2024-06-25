@@ -637,14 +637,18 @@ struct ApiAccount {
 
 /// Generated class from Pigeon that represents data sent in messages.
 struct ApiHistoryToken {
+  var test: String
 
   static func fromList(_ list: [Any?]) -> ApiHistoryToken? {
+    let test = list[0] as! String
 
     return ApiHistoryToken(
+      test: test
     )
   }
   func toList() -> [Any?] {
     return [
+      test,
     ]
   }
 }
@@ -656,17 +660,17 @@ struct ApiChanges {
   /// An array of model objects identifiers that the framework deleted from the finance store.
   var deleted: [String?]
   /// An array of model objects the framework inserted into the finance store.
-  var inserted: [dynamic?]
+  var inserted: [String?]
   /// An updated history token.
   var newToken: ApiHistoryToken
   /// An array of model objects that the framework updated in the finance store.
-  var updated: [dynamic?]
+  var updated: [String?]
 
   static func fromList(_ list: [Any?]) -> ApiChanges? {
     let deleted = list[0] as! [String?]
-    let inserted = list[1] as! [dynamic?]
+    let inserted = list[1] as! [String?]
     let newToken = ApiHistoryToken.fromList(list[2] as! [Any?])!
-    let updated = list[3] as! [dynamic?]
+    let updated = list[3] as! [String?]
 
     return ApiChanges(
       deleted: deleted,
@@ -716,8 +720,6 @@ private class FinanceKitApiCodecReader: FlutterStandardReader {
         return ApiSortDescriptor.fromList(self.readValue() as! [Any?])
       case 141:
         return ApiTransaction.fromList(self.readValue() as! [Any?])
-      case 142:
-        return dynamic.fromList(self.readValue() as! [Any?])
       default:
         return super.readValue(ofType: type)
     }
@@ -767,9 +769,6 @@ private class FinanceKitApiCodecWriter: FlutterStandardWriter {
       super.writeValue(value.toList())
     } else if let value = value as? ApiTransaction {
       super.writeByte(141)
-      super.writeValue(value.toList())
-    } else if let value = value as? dynamic {
-      super.writeByte(142)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)

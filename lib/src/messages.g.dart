@@ -681,16 +681,21 @@ class ApiAccount {
 
 class ApiHistoryToken {
   ApiHistoryToken({
+    required this.test,
   });
+
+  String test;
 
   Object encode() {
     return <Object?>[
+      test,
     ];
   }
 
   static ApiHistoryToken decode(Object result) {
     result as List<Object?>;
     return ApiHistoryToken(
+      test: result[0]! as String,
     );
   }
 }
@@ -708,13 +713,13 @@ class ApiChanges {
   List<String?> deleted;
 
   /// An array of model objects the framework inserted into the finance store.
-  List<dynamic?> inserted;
+  List<String?> inserted;
 
   /// An updated history token.
   ApiHistoryToken newToken;
 
   /// An array of model objects that the framework updated in the finance store.
-  List<dynamic?> updated;
+  List<String?> updated;
 
   Object encode() {
     return <Object?>[
@@ -729,9 +734,9 @@ class ApiChanges {
     result as List<Object?>;
     return ApiChanges(
       deleted: (result[0] as List<Object?>?)!.cast<String?>(),
-      inserted: (result[1] as List<Object?>?)!.cast<dynamic?>(),
+      inserted: (result[1] as List<Object?>?)!.cast<String?>(),
       newToken: ApiHistoryToken.decode(result[2]! as List<Object?>),
-      updated: (result[3] as List<Object?>?)!.cast<dynamic?>(),
+      updated: (result[3] as List<Object?>?)!.cast<String?>(),
     );
   }
 }
@@ -782,9 +787,6 @@ class FinanceKitApiCodec extends StandardMessageCodec {
     } else if (value is ApiTransaction) {
       buffer.putUint8(141);
       writeValue(buffer, value.encode());
-    } else if (value is dynamic) {
-      buffer.putUint8(142);
-      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -821,8 +823,6 @@ class FinanceKitApiCodec extends StandardMessageCodec {
         return ApiSortDescriptor.decode(readValue(buffer)!);
       case 141: 
         return ApiTransaction.decode(readValue(buffer)!);
-      case 142: 
-        return dynamic.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -902,6 +902,7 @@ class FinanceKitApi {
     );
     final List<Object?>? __pigeon_replyList =
         await __pigeon_channel.send(null) as List<Object?>?;
+    print("$__pigeon_replyList");
     if (__pigeon_replyList == null) {
       throw _createConnectionError(__pigeon_channelName);
     } else if (__pigeon_replyList.length > 1) {

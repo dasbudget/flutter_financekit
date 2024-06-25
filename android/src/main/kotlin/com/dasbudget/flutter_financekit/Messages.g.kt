@@ -653,16 +653,19 @@ data class ApiAccount (
 
 /** Generated class from Pigeon that represents data sent in messages. */
 data class ApiHistoryToken (
+  val test: String
 
 ) {
   companion object {
     @Suppress("UNCHECKED_CAST")
     fun fromList(list: List<Any?>): ApiHistoryToken {
-      return ApiHistoryToken()
+      val test = list[0] as String
+      return ApiHistoryToken(test)
     }
   }
   fun toList(): List<Any?> {
     return listOf<Any?>(
+      test,
     )
   }
 }
@@ -676,20 +679,20 @@ data class ApiChanges (
   /** An array of model objects identifiers that the framework deleted from the finance store. */
   val deleted: List<String?>,
   /** An array of model objects the framework inserted into the finance store. */
-  val inserted: List<dynamic?>,
+  val inserted: List<String?>,
   /** An updated history token. */
   val newToken: ApiHistoryToken,
   /** An array of model objects that the framework updated in the finance store. */
-  val updated: List<dynamic?>
+  val updated: List<String?>
 
 ) {
   companion object {
     @Suppress("UNCHECKED_CAST")
     fun fromList(list: List<Any?>): ApiChanges {
       val deleted = list[0] as List<String?>
-      val inserted = list[1] as List<dynamic?>
+      val inserted = list[1] as List<String?>
       val newToken = ApiHistoryToken.fromList(list[2] as List<Any?>)
-      val updated = list[3] as List<dynamic?>
+      val updated = list[3] as List<String?>
       return ApiChanges(deleted, inserted, newToken, updated)
     }
   }
@@ -777,11 +780,6 @@ private object FinanceKitApiCodec : StandardMessageCodec() {
           ApiTransaction.fromList(it)
         }
       }
-      142.toByte() -> {
-        return (readValue(buffer) as? List<Any?>)?.let {
-          dynamic.fromList(it)
-        }
-      }
       else -> super.readValueOfType(type, buffer)
     }
   }
@@ -841,10 +839,6 @@ private object FinanceKitApiCodec : StandardMessageCodec() {
       }
       is ApiTransaction -> {
         stream.write(141)
-        writeValue(stream, value.toList())
-      }
-      is dynamic -> {
-        stream.write(142)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_financekit/flutter_financekit.dart';
 import 'package:flutter_financekit/flutter_financekit_types.dart';
+import 'package:flutter_financekit/extensions.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,7 +20,8 @@ class _MyAppState extends State<MyApp> {
   String _authStatus = AuthorizationStatus.notDetermined.name;
   bool _dataAvail = false;
   List<Account> _accs = [];
-  List<Transaction> _txs = [];
+  final Map<ID, List<Transaction>> _txs = {};
+  final Map<ID, AccountBalance> _balances = {};
 
   @override
   void initState() {
@@ -43,7 +45,6 @@ class _MyAppState extends State<MyApp> {
               buildDataAvail(),
               buildAuth(),
               buildAccounts(),
-              buildTransactions(),
             ],
           ),
         ),
@@ -93,8 +94,12 @@ class _MyAppState extends State<MyApp> {
 
   Widget buildAccounts() {
     String t = "Accounts:";
-    for (var value in _accs) {
-      t += "\n${value.displayName}";
+    for (var acc in _accs) {
+      t += "\n${acc.displayName} | ${_balances[acc.id]?.formattedBalance}";
+      List<Transaction> txs = _txs[acc.id] ?? [];
+      for(var tx in txs) {
+        t += "\n\t${tx.formattedDate} | ${tx.formattedDescription} | ${tx.formattedAmount}";
+      }
     }
 
     return Column(
@@ -103,34 +108,23 @@ class _MyAppState extends State<MyApp> {
         ElevatedButton(
             child: const Text("Fetch"),
             onPressed: () {
-              FinanceKit.accounts(QueryParams(limit: 50)).then((accs) => {
-                    setState(() {
-                      _accs = accs;
-                    })
+              FinanceKit.accounts(QueryParams()).then((accs) {
+                for (var acc in accs) {
+                  FinanceKit.accountBalances(QueryParams(
+                    predicate: AccountBalance.byAccountIDs([acc.id]),
+                  )).then((bals) {
+                    FinanceKit.transactions(QueryParams(
+                      predicate: Transaction.byAccountIDs([acc.id]),
+                    )).then((txs) {
+                      setState(() {
+                        _txs[acc.id] = txs;
+                        _balances[acc.id] = bals[0];
+                        _accs = accs;
+                      });
+                    });
                   });
-            })
-      ],
-    );
-  }
-
-  Widget buildTransactions() {
-    String t = "Transactions:";
-    for (var value in _txs) {
-      t +=
-          "\n${value.transactionAmount.format()}${value.originalTransactionDescription}";
-    }
-
-    return Column(
-      children: [
-        Text(t, textAlign: TextAlign.center),
-        ElevatedButton(
-            child: const Text("Fetch"),
-            onPressed: () {
-              FinanceKit.transactions(QueryParams(limit: 100)).then((txs) => {
-                    setState(() {
-                      _txs = txs;
-                    })
-                  });
+                }
+              });
             })
       ],
     );

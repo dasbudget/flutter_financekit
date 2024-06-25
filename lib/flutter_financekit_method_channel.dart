@@ -13,8 +13,8 @@ class MethodChannelFlutterFinanceKit implements FlutterFinanceKitPlatform {
   /// The method channel used to interact with the native platform.
   static final FinanceKitApi _api = FinanceKitApi();
   final BinaryMessenger? _binaryMessenger;
-  static const MethodCodec _channelCodec = StandardMethodCodec(
-      FinanceKitApiCodec());
+  static const MethodCodec _channelCodec =
+      StandardMethodCodec(FinanceKitApiCodec());
 
   @override
   Future<bool> isDataAvailable(DataType type) async {
@@ -46,7 +46,7 @@ class MethodChannelFlutterFinanceKit implements FlutterFinanceKitPlatform {
     return stream.map((replyList) {
       List<Object?>? obj = replyList[0] as List<Object?>?;
       List<ApiChanges>? ch = obj?.cast<ApiChanges>();
-      return ch!;
+      return "" as Changes<AccountBalance>; // todo
     });
   }
 
@@ -55,8 +55,9 @@ class MethodChannelFlutterFinanceKit implements FlutterFinanceKitPlatform {
       QueryParams<AccountBalance> query) async {
     // todo params
     return _api.accountBalances(ApiQueryParams()).then((value) {
+      value = List.from(value);
       value.removeWhere((element) => element == null);
-      return value.map<AccountBalance>((e) => e!.convert()).toList();
+      return filter(value.map<AccountBalance>((e) => e!.convert()).toList(), query.predicate);
     });
   }
 
@@ -71,8 +72,9 @@ class MethodChannelFlutterFinanceKit implements FlutterFinanceKitPlatform {
   Future<List<Account>> accounts(QueryParams<Account> query) async {
     // todo query
     return _api.accounts(ApiQueryParams()).then((value) {
+      value = List.from(value);
       value.removeWhere((element) => element == null);
-      return value.map<Account>((e) => e!.convert()).toList();
+      return filter(value.map<Account>((e) => e!.convert()).toList(), query.predicate);
     });
   }
 
@@ -87,8 +89,9 @@ class MethodChannelFlutterFinanceKit implements FlutterFinanceKitPlatform {
   Future<List<Transaction>> transactions(QueryParams<Transaction> query) async {
     // todo query
     return _api.transactions(ApiQueryParams()).then((value) {
+      value = List.from(value);
       value.removeWhere((e) => e == null);
-      return value.map<Transaction>((e) => e!.convert()).toList();
+      return filter(value.map<Transaction>((e) => e!.convert()).toList(), query.predicate);
     });
   }
 
@@ -119,4 +122,13 @@ class MethodChannelFlutterFinanceKit implements FlutterFinanceKitPlatform {
       );
     }
   }
+}
+
+List<T> filter<T>(List<T> list, Predicate<T>? predicate) {
+  print("filter ${list} ${predicate}");
+  if (predicate == null) return list;
+
+  list = List.from(list);
+  list.retainWhere(predicate);
+  return list;
 }

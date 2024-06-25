@@ -26,7 +26,7 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSFinancialDataDescription</key>
+	<key>NSFinancialDataUsageDescription</key>
 	<string>Flutter FinanceKit</string>
 	<key>New Item</key>
 	<string></string>

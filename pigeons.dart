@@ -433,7 +433,13 @@ class ApiAccount {
 }
 
 // todo
-class ApiHistoryToken {}
+class ApiHistoryToken {
+  String test;
+
+  ApiHistoryToken({
+    required this.test,
+  });
+}
 
 /// A structure that records changes to the finance store.
 class ApiChanges {
@@ -441,13 +447,13 @@ class ApiChanges {
   List<String?> deleted;
 
   /// An array of model objects the framework inserted into the finance store.
-  List<dynamic?> inserted;
+  List<String?> inserted;
 
   /// An updated history token.
   ApiHistoryToken newToken;
 
   /// An array of model objects that the framework updated in the finance store.
-  List<dynamic?> updated;
+  List<String?> updated;
 
   ApiChanges({
     required this.deleted,
@@ -456,7 +462,6 @@ class ApiChanges {
     required this.updated,
   });
 }
-
 
 @HostApi()
 abstract class FinanceKitApi {
@@ -476,7 +481,6 @@ abstract class FinanceKitApi {
 
   @async
   List<ApiTransaction> transactions(ApiQueryParams query);
-
 
   List<ApiChanges> test();
 
