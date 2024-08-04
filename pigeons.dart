@@ -447,13 +447,13 @@ class ApiChanges {
   List<String?> deleted;
 
   /// An array of model objects the framework inserted into the finance store.
-  List<String?> inserted;
+  List<Object?> inserted;
 
   /// An updated history token.
   ApiHistoryToken newToken;
 
   /// An array of model objects that the framework updated in the finance store.
-  List<String?> updated;
+  List<Object?> updated;
 
   ApiChanges({
     required this.deleted,
@@ -481,6 +481,10 @@ abstract class FinanceKitApi {
 
   @async
   List<ApiTransaction> transactions(ApiQueryParams query);
+
+  String accountBalanceHistory(String accountID);
+  String transactionHistory(String accountID);
+  String accountHistory();
 
   List<ApiChanges> test();
 

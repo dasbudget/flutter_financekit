@@ -97,8 +97,9 @@ class _MyAppState extends State<MyApp> {
     for (var acc in _accs) {
       t += "\n${acc.displayName} | ${_balances[acc.id]?.formattedBalance}";
       List<Transaction> txs = _txs[acc.id] ?? [];
-      for(var tx in txs) {
-        t += "\n\t${tx.formattedDate} | ${tx.formattedDescription} | ${tx.formattedAmount}";
+      for (var tx in txs) {
+        t +=
+            "\n\t${tx.formattedDate} | ${tx.formattedDescription} | ${tx.formattedAmount}";
       }
     }
 
@@ -110,6 +111,19 @@ class _MyAppState extends State<MyApp> {
             onPressed: () {
               FinanceKit.accounts(QueryParams()).then((accs) {
                 for (var acc in accs) {
+                  print("listening on acc ${acc.displayName}");
+                  FinanceKit.transactionHistory(acc.id, isMonitoring: true)
+                      .then((value) {
+                    value.listen((event) {
+                      print("got something1 $event");
+                      print("got something2 ${event.toString()}");
+                      print("got something3 ${event.updated}");
+                      print("got something4 ${event.deleted}");
+                    });
+                  }, onError: (err) {
+                    print("got err $err");
+                  });
+
                   FinanceKit.accountBalances(QueryParams(
                     predicate: AccountBalance.byAccountIDs([acc.id]),
                   )).then((bals) {

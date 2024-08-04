@@ -2,6 +2,7 @@ import Flutter
 import UIKit
 import FinanceKit
 import os.log
+import Foundation
 
 
 @available(iOS 17.4, *)
@@ -211,12 +212,14 @@ extension FinanceStore.DataType {
     }
 }
 
-
 public class SwiftFlutterFinanceKitPlugin: NSObject, FlutterPlugin, FinanceKitApi {
     private let store = FinanceStore.shared
-    
+    static var messenger: FlutterBinaryMessenger!
+    static var codec: FlutterMethodCodec & NSObject { FlutterStandardMethodCodec(readerWriter: FinanceKitApiCodecReaderWriter())}
+
+
     public static func register(with registrar: FlutterPluginRegistrar) {
-        let messenger: FlutterBinaryMessenger = registrar.messenger()
+        messenger = registrar.messenger()
         let api: FinanceKitApi & NSObjectProtocol = SwiftFlutterFinanceKitPlugin.init()
         FinanceKitApiSetup.setUp(binaryMessenger: messenger, api: api);
     }
@@ -235,6 +238,7 @@ public class SwiftFlutterFinanceKitPlugin: NSObject, FlutterPlugin, FinanceKitAp
                 let status = try await store.authorizationStatus()
                 completion(.success(try status.toApi))
             } catch let error {
+                os_log("Error: %@", log: .default, type: .error, String(describing: error))
                 fatalError()
             }
         }
@@ -261,6 +265,7 @@ public class SwiftFlutterFinanceKitPlugin: NSObject, FlutterPlugin, FinanceKitAp
                     a.toApi
                 })))
             } catch let error {
+                os_log("Error: %@", log: .default, type: .error, String(describing: error))
                 fatalError()
             }
         }
@@ -274,6 +279,7 @@ public class SwiftFlutterFinanceKitPlugin: NSObject, FlutterPlugin, FinanceKitAp
                     try a.toApi
                 })))
             } catch let error {
+                os_log("Error: %@", log: .default, type: .error, String(describing: error))
                 fatalError()
             }
         }
@@ -287,8 +293,138 @@ public class SwiftFlutterFinanceKitPlugin: NSObject, FlutterPlugin, FinanceKitAp
                     try t.toApi
                 })))
             } catch let error {
+                os_log("Error: %@", log: .default, type: .error, String(describing: error))
                 fatalError()
             }
         }
     }
+    
+    func accountBalanceHistory(accountID: String) throws -> String {
+        let channelName = UUID().uuidString
+        let streamChannel = FlutterEventChannel(
+           name: channelName,
+           binaryMessenger: SwiftFlutterFinanceKitPlugin.messenger,
+           codec: SwiftFlutterFinanceKitPlugin.codec
+        )
+        
+        streamChannel.setStreamHandler(FlutterBasedEventHandler(
+            onListen: { arg, eventSink in
+                let seq = self.store.accountBalanceHistory(forAccountID: UUID(uuidString: accountID)!, since: nil, isMonitoring: true)
+
+                Task {
+                    for try await change in seq {
+                        DispatchQueue.main.async {
+                            do {
+                                eventSink(ApiChanges(
+                                    deleted: change.deleted.map({ id in id.uuidString}),
+                                    inserted: try change.inserted.map({ ab in try ab.toApi }),
+                                    newToken: ApiHistoryToken.init(test: ""),
+                                    updated: try change.updated.map({ ab in try ab.toApi })
+                                ))
+                            } catch {}
+                        }
+                    }
+                }
+
+                return nil
+            },
+            onCancel: { arg in nil }
+        ))
+
+        return channelName
+    }
+    
+    func accountHistory() throws -> String {
+        let channelName = UUID().uuidString
+        let streamChannel = FlutterEventChannel(
+           name: channelName,
+           binaryMessenger: SwiftFlutterFinanceKitPlugin.messenger,
+           codec: SwiftFlutterFinanceKitPlugin.codec
+        )
+        
+        streamChannel.setStreamHandler(FlutterBasedEventHandler(
+            onListen: { arg, eventSink in
+                let seq = self.store.accountHistory(since: nil, isMonitoring: true)
+
+                Task {
+                    for try await change in seq {
+                        DispatchQueue.main.async {
+                            eventSink(ApiChanges(
+                                deleted: change.deleted.map({ id in id.uuidString}),
+                                inserted: change.inserted.map({ ab in ab.toApi }),
+                                newToken: ApiHistoryToken.init(test: ""),
+                                updated: change.updated.map({ ab in ab.toApi })
+                            ))
+                        }
+                    }
+                }
+
+                return nil
+            },
+            onCancel: { arg in nil }
+        ))
+
+        return channelName
+    }
+    
+    
+    func transactionHistory(accountID: String) throws -> String {
+        let channelName = UUID().uuidString
+        let streamChannel = FlutterEventChannel(
+           name: channelName,
+           binaryMessenger: SwiftFlutterFinanceKitPlugin.messenger,
+           codec: SwiftFlutterFinanceKitPlugin.codec
+        )
+        
+        streamChannel.setStreamHandler(FlutterBasedEventHandler(
+            onListen: { arg, eventSink in
+                let txSeq = self.store.transactionHistory(forAccountID: UUID(uuidString: accountID)!, since: nil, isMonitoring: true)
+
+                Task {
+                    for try await change in txSeq {
+                        DispatchQueue.main.async {
+                            do {
+                                eventSink(ApiChanges(
+                                    deleted: change.deleted.map({ id in id.uuidString}),
+                                    inserted: try change.inserted.map({ ab in try ab.toApi }),
+                                    newToken: ApiHistoryToken.init(test: ""),
+                                    updated: try change.updated.map({ ab in try ab.toApi })
+                                ))
+                            } catch {}
+                        }
+                    }
+                }
+
+                return nil
+            },
+            onCancel: { arg in nil }
+        ))
+
+        return channelName
+    }
+}
+
+
+public class FlutterBasedEventHandler: NSObject,FlutterStreamHandler {
+   let _onListen: (_ arguments: Any?, _ eventSink: @escaping FlutterEventSink) -> FlutterError?
+   let _onCancel: (_ arguments: Any?) -> FlutterError?
+    
+    init(
+        onListen: @escaping (_ arguments: Any?, _ eventSink: @escaping FlutterEventSink) -> FlutterError?,
+        onCancel: @escaping (_ arguments: Any?) -> FlutterError?
+    ) {
+         self._onListen = onListen
+         self._onCancel = onCancel
+    }
+    
+   public func onListen(
+       withArguments arguments: Any?,
+       eventSink: @escaping FlutterEventSink
+   ) -> FlutterError? {
+       return self._onListen(arguments, eventSink)
+   }
+   
+   public func onCancel(withArguments arguments: Any?) -> FlutterError? {
+       return self._onCancel(arguments)
+   }
 }

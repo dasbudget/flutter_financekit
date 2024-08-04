@@ -34,19 +34,44 @@ class MethodChannelFlutterFinanceKit implements FlutterFinanceKitPlatform {
   @override
   Future<Stream<Changes<AccountBalance>>> accountBalanceHistory(ID accountID,
       {HistoryToken? since, bool isMonitoring = true}) async {
-    String channelName = _channelName("accountBalanceHistory");
+    var channelName = await _api.accountBalanceHistory(accountID.uuid);
     final EventChannel channel = EventChannel(
       channelName,
       _channelCodec,
       _binaryMessenger,
     );
 
-    Stream stream = channel.receiveBroadcastStream();
+    return channel.receiveBroadcastStream().map((dynamic event) {
+      ApiChanges changes = event;
+      return Changes<AccountBalance>(
+        deleted: changes.deleted.map<ID>((e) => e!.toUuid).toList(),
+        inserted: changes.inserted.map<AccountBalance>((e) =>
+            (e! as ApiAccountBalance).convert()).toList(),
+        newToken: changes.newToken.convert(),
+        updated: changes.inserted.map<AccountBalance>((e) =>
+            (e! as ApiAccountBalance).convert()).toList(),
+      );
+    });
+  }
 
-    return stream.map((replyList) {
-      List<Object?>? obj = replyList[0] as List<Object?>?;
-      List<ApiChanges>? ch = obj?.cast<ApiChanges>();
-      return "" as Changes<AccountBalance>; // todo
+  @override
+  Future<Stream<Changes<Transaction>>> transactionHistory(ID accountID,
+      {HistoryToken? since, bool isMonitoring = true}) async {
+    var channelName = await _api.transactionHistory(accountID.uuid);
+    final EventChannel channel = EventChannel(
+      channelName,
+      _channelCodec,
+      _binaryMessenger,
+    );
+
+    return channel.receiveBroadcastStream().map((dynamic event) {
+      ApiChanges changes = event;
+      return Changes<Transaction>(
+        deleted: changes.deleted.map<ID>((e) => e!.toUuid).toList(),
+        inserted: changes.inserted.map<Transaction>((e) => (e! as ApiTransaction).convert()).toList(),
+        newToken: changes.newToken.convert(),
+        updated: changes.inserted.map<Transaction>((e) => (e! as ApiTransaction).convert()).toList(),
+      );
     });
   }
 
@@ -57,15 +82,30 @@ class MethodChannelFlutterFinanceKit implements FlutterFinanceKitPlatform {
     return _api.accountBalances(ApiQueryParams()).then((value) {
       value = List.from(value);
       value.removeWhere((element) => element == null);
-      return filter(value.map<AccountBalance>((e) => e!.convert()).toList(), query.predicate);
+      return filter(value.map<AccountBalance>((e) => e!.convert()).toList(),
+          query.predicate);
     });
   }
 
   @override
   Future<Stream<Changes<Account>>> accountHistory(
       {HistoryToken? since, bool isMonitoring = true}) async {
-    // TODO: implement accountHistory
-    throw UnimplementedError();
+    var channelName = await _api.accountHistory();
+    final EventChannel channel = EventChannel(
+      channelName,
+      _channelCodec,
+      _binaryMessenger,
+    );
+
+    return channel.receiveBroadcastStream().map((dynamic event) {
+      ApiChanges changes = event;
+      return Changes<Account>(
+        deleted: changes.deleted.map<ID>((e) => e!.toUuid).toList(),
+        inserted: changes.inserted.map<Account>((e) => (e! as ApiAccount).convert()).toList(),
+        newToken: changes.newToken.convert(),
+        updated: changes.inserted.map<Account>((e) => (e! as ApiAccount).convert()).toList(),
+      );
+    });
   }
 
   @override
@@ -74,15 +114,9 @@ class MethodChannelFlutterFinanceKit implements FlutterFinanceKitPlatform {
     return _api.accounts(ApiQueryParams()).then((value) {
       value = List.from(value);
       value.removeWhere((element) => element == null);
-      return filter(value.map<Account>((e) => e!.convert()).toList(), query.predicate);
+      return filter(
+          value.map<Account>((e) => e!.convert()).toList(), query.predicate);
     });
-  }
-
-  @override
-  Future<Stream<Changes<Transaction>>> transactionHistory(ID accountID,
-      {HistoryToken? since, bool isMonitoring = true}) async {
-    // TODO: implement transactionHistory
-    throw UnimplementedError();
   }
 
   @override
@@ -91,7 +125,8 @@ class MethodChannelFlutterFinanceKit implements FlutterFinanceKitPlatform {
     return _api.transactions(ApiQueryParams()).then((value) {
       value = List.from(value);
       value.removeWhere((e) => e == null);
-      return filter(value.map<Transaction>((e) => e!.convert()).toList(), query.predicate);
+      return filter(value.map<Transaction>((e) => e!.convert()).toList(),
+          query.predicate);
     });
   }
 
@@ -125,7 +160,6 @@ class MethodChannelFlutterFinanceKit implements FlutterFinanceKitPlatform {
 }
 
 List<T> filter<T>(List<T> list, Predicate<T>? predicate) {
-  print("filter ${list} ${predicate}");
   if (predicate == null) return list;
 
   list = List.from(list);

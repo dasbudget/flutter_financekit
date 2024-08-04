@@ -51,6 +51,12 @@ extension ApiAcc on ApiAccount {
   }
 }
 
+extension ApiHistoryTokenExt on ApiHistoryToken {
+  HistoryToken convert() {
+    return HistoryToken();
+  }
+}
+
 extension ApiTx on ApiTransaction {
   Transaction convert() {
     return Transaction(
